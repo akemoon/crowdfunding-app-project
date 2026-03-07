@@ -1,0 +1,170 @@
+definitions:
+  domain.Category:
+    enum:
+    - science
+    - tech
+    - architecture_and_urban
+    - sport
+    - music
+    type: string
+    x-enum-varnames:
+    - CategoryScience
+    - CategoryTech
+    - CategoryArchitectureAndUrban
+    - CategorySport
+    - CategoryMusic
+  domain.CreateProjectReq:
+    properties:
+      category:
+        $ref: '#/definitions/domain.Category'
+      currency:
+        $ref: '#/definitions/domain.Currency'
+      description:
+        type: string
+      durationDays:
+        type: integer
+      goalAmount:
+        type: integer
+      name:
+        type: string
+    type: object
+  domain.Currency:
+    enum:
+    - RUB
+    - USD
+    type: string
+    x-enum-varnames:
+    - CurrencyRUB
+    - CurrencyUSD
+  domain.Project:
+    properties:
+      category:
+        $ref: '#/definitions/domain.Category'
+      currency:
+        $ref: '#/definitions/domain.Currency'
+      currentAmount:
+        type: integer
+      description:
+        type: string
+      durationDays:
+        type: integer
+      goalAmount:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      startedAt:
+        type: string
+      userID:
+        type: string
+    type: object
+  handler.ErrorResponse:
+    properties:
+      detail:
+        type: string
+      error:
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/handler.FieldError'
+        type: array
+    type: object
+  handler.FieldError:
+    properties:
+      code:
+        type: string
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Projects service API for a crowdfunding app.
+  title: Project service API
+  version: "1.0"
+paths:
+  /project:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new project by given payload.
+      parameters:
+      - description: User ID (UUID)
+        in: header
+        name: X-User-ID
+        required: true
+        type: string
+      - description: Project create payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateProjectReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: created
+          schema:
+            type: string
+        "400":
+          description: validation_error | invalid request body
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "405":
+          description: method not allowed
+          schema:
+            type: string
+        "409":
+          description: project_exists
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: internal_error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create project
+      tags:
+      - project
+  /project/{id}:
+    get:
+      description: Returns a project by its id.
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Project'
+        "400":
+          description: invalid project id
+          schema:
+            type: string
+        "404":
+          description: project_not_found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "405":
+          description: method not allowed
+          schema:
+            type: string
+        "500":
+          description: internal_error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get project by id
+      tags:
+      - project
+swagger: "2.0"
