@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -113,29 +112,4 @@ func ValidateCategory(c Category) error {
 	default:
 		return ErrUnknownCategory
 	}
-}
-
-func ValidateCreateProjectReq(req CreateProjectReq) error {
-	return validateAll(
-		func() error { return ValidateCategory(req.Category) },
-		func() error { return ValidateName(req.Name) },
-		func() error { return ValidateDescription(req.Description) },
-		func() error { return ValidateCurrency(req.Currency) },
-		func() error { return ValidateGoalAmount(req.GoalAmount) },
-		func() error { return ValidateDurationDays(req.DurationDays) },
-	)
-}
-
-func validateAll(checks ...func() error) error {
-	var errs []error
-	for _, check := range checks {
-		err := check()
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if len(errs) == 0 {
-		return nil
-	}
-	return errors.Join(errs...)
 }
