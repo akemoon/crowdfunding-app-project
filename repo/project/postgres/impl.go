@@ -248,3 +248,163 @@ func (r *ProjectRepo) AddContribution(ctx context.Context, projectID uuid.UUID, 
 
 	return nil
 }
+
+//go:embed sql/approve_project.sql
+var approveProjectSQL string
+
+func (r *ProjectRepo) ApproveProject(ctx context.Context, id uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx, approveProjectSQL, id)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectNotOnReview
+	}
+
+	return nil
+}
+
+//go:embed sql/reject_project.sql
+var rejectProjectSQL string
+
+func (r *ProjectRepo) RejectProject(ctx context.Context, id uuid.UUID, reason string) error {
+	res, err := r.db.ExecContext(ctx, rejectProjectSQL, id, reason)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectNotOnReview
+	}
+
+	return nil
+}
+
+//go:embed sql/update_project.sql
+var updateProjectSQL string
+
+func (r *ProjectRepo) UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.UUID, req domain.CreateProjectReq) error {
+	dbCategory, err := MapCategoryToDB(req.Category)
+	if err != nil {
+		return err
+	}
+
+	dbCurrency, err := MapCurrencyToDB(req.Currency)
+	if err != nil {
+		return err
+	}
+
+	res, err := r.db.ExecContext(ctx, updateProjectSQL,
+		id, userID, dbCategory, req.Name, req.Description, dbCurrency, req.GoalAmount, req.DurationDays,
+	)
+	if err != nil {
+		return pglib.MapConstraintErr(err, projectConstraints, err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrApplicationNotFound
+	}
+
+	return nil
+}
+
+//go:embed sql/get_application_by_project_id.sql
+var getApplicationByProjectIDSQL string
+
+func (r *ProjectRepo) GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID) (domain.Application, error) {
+	var aDB ApplicationDB
+	var pDB ProjectDB
+
+	err := r.db.QueryRowContext(ctx, getApplicationByProjectIDSQL, projectID).Scan(
+		&aDB.StatusID,
+		&aDB.RejectReason,
+		&aDB.CreatedAt,
+		&pDB.ID,
+		&pDB.UserID,
+		&pDB.CategoryID,
+		&pDB.Name,
+		&pDB.Description,
+		&pDB.CurrencyID,
+		&pDB.GoalAmount,
+		&pDB.CurrentAmount,
+		&pDB.DurationDays,
+		&pDB.StatusID,
+		&pDB.IsBoosted,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.Application{}, domain.ErrApplicationNotFound
+		}
+		return domain.Application{}, err
+	}
+
+	app, err := MapApplicationFromDB(aDB, pDB)
+	if err != nil {
+		return domain.Application{}, err
+	}
+
+	return app, nil
+}
+
+//go:embed sql/get_pending_applications.sql
+var getPendingApplicationsSQL string
+
+func (r *ProjectRepo) GetPendingApplications(ctx context.Context) ([]domain.Application, error) {
+	rows, err := r.db.QueryContext(ctx, getPendingApplicationsSQL)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []domain.Application
+
+	for rows.Next() {
+		var aDB ApplicationDB
+		var pDB ProjectDB
+
+		if err := rows.Scan(
+			&aDB.StatusID,
+			&aDB.RejectReason,
+			&aDB.CreatedAt,
+			&pDB.ID,
+			&pDB.UserID,
+			&pDB.CategoryID,
+			&pDB.Name,
+			&pDB.Description,
+			&pDB.CurrencyID,
+			&pDB.GoalAmount,
+			&pDB.CurrentAmount,
+			&pDB.DurationDays,
+			&pDB.StatusID,
+			&pDB.IsBoosted,
+		); err != nil {
+			return nil, err
+		}
+
+		app, err := MapApplicationFromDB(aDB, pDB)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, app)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}

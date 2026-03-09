@@ -13,6 +13,12 @@ import (
 )
 
 const userIDHeader = "X-User-ID"
+const userRoleHeader = "X-User-Role"
+const managerRole = "Manager"
+
+type RejectProjectReq struct {
+	Reason string `json:"reason"`
+}
 
 // @Summary Create project
 // @Description Creates a new project by given payload.
@@ -144,3 +150,105 @@ func GetProjectByID(svc *project.Service) http.HandlerFunc {
 		httplib.WriteJSON(w, http.StatusOK, p)
 	}
 }
+
+// @Summary Approve project application
+// @Description Approves a project application and moves project to active.
+// @Tags manager
+// @Produce json
+// @Param X-User-ID header string true "User ID (UUID)"
+// @Param X-User-Role header string true "User role (must be Manager)"
+// @Param id path string true "Project ID"
+// @Success 200 {object} map[string]string "status=ok"
+// @Failure 400 {string} string "invalid project id"
+// @Failure 401 {string} string "unauthorized"
+// @Failure 403 {string} string "forbidden"
+// @Failure 409 {object} httplib.ErrResp "project_not_on_review"
+// @Failure 500 {object} httplib.ErrResp "internal_error"
+// @Router /manager/applications/{id}/approve [post]
+func ApproveProject(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Header.Get(userRoleHeader) != managerRole {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.ApproveProject(r.Context(), id)
+		if err != nil {
+			log.Printf("ApproveProject: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}
+}
+
+// @Summary Reject project application
+// @Description Rejects a project application with reason.
+// @Tags manager
+// @Accept json
+// @Produce json
+// @Param X-User-ID header string true "User ID (UUID)"
+// @Param X-User-Role header string true "User role (must be Manager)"
+// @Param id path string true "Project ID"
+// @Param body body RejectProjectReq true "Reject reason payload"
+// @Success 200 {object} map[string]string "status=ok"
+// @Failure 400 {string} string "invalid project id | invalid request body"
+// @Failure 401 {string} string "unauthorized"
+// @Failure 403 {string} string "forbidden"
+// @Failure 409 {object} httplib.ErrResp "project_not_on_review"
+// @Failure 500 {object} httplib.ErrResp "internal_error"
+// @Router /manager/applications/{id}/reject [post]
+func RejectProject(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Header.Get(userRoleHeader) != managerRole {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		var req RejectProjectReq
+
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.RejectProject(r.Context(), id, req.Reason)
+		if err != nil {
+			log.Printf("RejectProject: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	}
+}
+
+// TODO: boost project req -> sync to promo

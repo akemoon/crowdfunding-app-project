@@ -4,11 +4,13 @@
 -- alice-test  -> 00000000-0000-7000-8000-000000000001
 -- boris99     -> 00000000-0000-7000-8000-000000000002
 -- cyril-dev   -> 00000000-0000-7000-8000-000000000003
+-- strelok     -> 00000000-0000-7000-8000-000000000004
 
 -- Categories: 1=science, 2=tech, 3=architecture_and_urban, 4=sport, 5=music
 -- Currencies: 1=RUB, 2=USD
+-- Statuses:   1=review, 2=active, 3=finished
 
-insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, boosted_until)
+insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, status_id, boosted_until)
 values
     -- alice: science & urban
     (
@@ -16,7 +18,7 @@ values
         'Лаборатория по астрофизике',
         'Сбор средств на оборудование и материалы для студенческой лаборатории.',
         1, 150000, 125213,
-        now() - interval '10 days', 30,
+        now() - interval '10 days', 30, 2,
         now() + interval '7 days'
     ),
     (
@@ -24,7 +26,7 @@ values
         'Восстановление городского парка',
         'Благоустройство и озеленение заброшенного парка в центре города.',
         1, 80000, 12000,
-        now() - interval '3 days', 45,
+        now() - interval '3 days', 45, 2,
         null
     ),
     (
@@ -32,7 +34,7 @@ values
         'Исследование микробиома почв',
         'Экспедиция и лабораторный анализ для изучения почвенных микроорганизмов.',
         1, 200000, 45000,
-        now() - interval '18 days', 60,
+        now() - interval '18 days', 60, 2,
         null
     ),
     (
@@ -40,7 +42,7 @@ values
         'Квантовый компьютер для университета',
         'Финансирование закупки квантового процессора для исследовательской лаборатории.',
         2, 50000, 12300,
-        now() - interval '1 days', 90,
+        now() - interval '1 days', 90, 2,
         now() + interval '10 days'
     ),
     (
@@ -48,7 +50,7 @@ values
         'Арт-инсталляция в подземном переходе',
         'Превращение пешеходного перехода в галерею современного искусства.',
         1, 60000, 58900,
-        now() - interval '25 days', 30,
+        now() - interval '25 days', 30, 2,
         null
     ),
     (
@@ -56,7 +58,7 @@ values
         'Мобильная обсерватория',
         'Телескоп на колёсах для выездных астрономических лекций в школах.',
         1, 120000, 3000,
-        now() - interval '2 days', 50,
+        now() - interval '2 days', 50, 2,
         null
     ),
     -- boris: tech & sport
@@ -65,7 +67,7 @@ values
         'Робот-помощник',
         'Сбор средств на создание бытовых роботов-помощников.',
         2, 10000, 9243,
-        now() - interval '2 days', 14,
+        now() - interval '2 days', 14, 2,
         now() + interval '5 days'
     ),
     (
@@ -73,7 +75,7 @@ values
         'Марафон для начинающих',
         'Организация городского забега с тренерами и медицинским сопровождением.',
         1, 30000, 8500,
-        now() - interval '7 days', 20,
+        now() - interval '7 days', 20, 2,
         null
     ),
     (
@@ -81,7 +83,7 @@ values
         'Приложение для трекинга здоровья',
         'Мобильное приложение с AI-анализом активности и сна.',
         2, 8000, 6700,
-        now() - interval '4 days', 30,
+        now() - interval '4 days', 30, 2,
         now() + interval '6 days'
     ),
     (
@@ -89,7 +91,7 @@ values
         'VR-тренажёр для спортсменов',
         'Иммерсивный тренажёр с биометрической обратной связью для командных видов спорта.',
         2, 25000, 4100,
-        now() - interval '12 days', 45,
+        now() - interval '12 days', 45, 2,
         null
     ),
     (
@@ -97,7 +99,7 @@ values
         'Горный ультрамарафон',
         'Организация экстремального забега по горным тропам с призовым фондом.',
         1, 50000, 22000,
-        now() - interval '5 days', 25,
+        now() - interval '5 days', 25, 2,
         null
     ),
     (
@@ -105,7 +107,7 @@ values
         'Школа бокса для детей',
         'Бесплатные занятия боксом для детей из малообеспеченных семей.',
         1, 40000, 31500,
-        now() - interval '9 days', 40,
+        now() - interval '9 days', 40, 2,
         null
     ),
     (
@@ -113,7 +115,7 @@ values
         'Умный браслет для пловцов',
         'Носимое устройство для анализа техники плавания в реальном времени.',
         2, 15000, 14980,
-        now() - interval '1 days', 20,
+        now() - interval '1 days', 20, 2,
         now() + interval '8 days'
     ),
     -- cyril: music, tech, urban
@@ -122,7 +124,7 @@ values
         'Музыкальный альбом "Северный ветер"',
         'Запись дебютного альбома с живыми инструментами.',
         1, 25000, 19320,
-        now() - interval '5 days', 15,
+        now() - interval '5 days', 15, 2,
         null
     ),
     (
@@ -130,7 +132,7 @@ values
         'Открытая библиотека кода',
         'Разработка и поддержка открытой библиотеки для Go-разработчиков.',
         2, 5000, 3100,
-        now() - interval '1 days', 60,
+        now() - interval '1 days', 60, 2,
         now() + interval '14 days'
     ),
     (
@@ -138,7 +140,7 @@ values
         'Джазовый фестиваль в парке',
         'Двухдневный open-air фестиваль с местными и приглашёнными джазовыми коллективами.',
         1, 90000, 27000,
-        now() - interval '6 days', 30,
+        now() - interval '6 days', 30, 2,
         null
     ),
     (
@@ -146,7 +148,7 @@ values
         'Уличный арт-квартал',
         'Реновация заброшенного квартала с муралами, скамейками и арт-объектами.',
         1, 300000, 85000,
-        now() - interval '11 days', 90,
+        now() - interval '11 days', 90, 2,
         now() + interval '4 days'
     ),
     (
@@ -154,7 +156,7 @@ values
         'Концертный зал для молодых',
         'Строительство малого зала для выступлений начинающих музыкантов.',
         1, 500000, 12000,
-        now() - interval '14 days', 120,
+        now() - interval '14 days', 120, 2,
         null
     ),
     (
@@ -162,7 +164,7 @@ values
         'Платформа для стриминга инди-музыки',
         'Сервис монетизации для независимых исполнителей с честными роялти.',
         2, 30000, 1500,
-        now() - interval '0 days', 45,
+        now() - interval '0 days', 45, 2,
         now() + interval '12 days'
     ),
     (
@@ -170,51 +172,51 @@ values
         'Зелёные крыши жилых домов',
         'Программа озеленения плоских кровель в спальных районах.',
         1, 180000, 44000,
-        now() - interval '8 days', 60,
+        now() - interval '8 days', 60, 2,
         null
     );
 
 -- projects with expired deadline (FinishWorker will pick them up on first tick)
-insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days)
+insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, status_id)
 values
     (
         '00000000-0000-7000-8000-000000000001', 1,
         'Телескоп для школьной обсерватории',
         'Успешный сбор на телескоп для сельской школы.',
         1, 50000, 50000,
-        now() - interval '40 days', 30
+        now() - interval '40 days', 30, 2
     ),
     (
         '00000000-0000-7000-8000-000000000002', 4,
         'Велодорожка в парке',
         'Благоустройство велосипедной инфраструктуры.',
         1, 120000, 98000,
-        now() - interval '60 days', 45
+        now() - interval '60 days', 45, 2
     ),
     (
         '00000000-0000-7000-8000-000000000003', 5,
         'Концерт под открытым небом',
         'Летний open-air концерт с местными группами.',
         1, 30000, 30000,
-        now() - interval '25 days', 20
+        now() - interval '25 days', 20, 2
     ),
     (
         '00000000-0000-7000-8000-000000000002', 2,
         'Образовательный хакатон',
         'Двухдневный хакатон для студентов технических специальностей.',
         2, 3000, 3000,
-        now() - interval '50 days', 21
+        now() - interval '50 days', 21, 2
     );
 
 -- strelok: S.T.A.L.K.E.R. reference
-insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, boosted_until)
+insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, status_id, boosted_until)
 values
     (
         '00000000-0000-7000-8000-000000000004', 1,
         'Документальная экспедиция в Зону отчуждения',
         'Финансирование научной экспедиции в Чернобыльскую зону отчуждения: радиационные замеры, биологические пробы, видеодокументация.',
         1, 333000, 111000,
-        now() - interval '3 days', 60,
+        now() - interval '3 days', 60, 2,
         now() + interval '7 days'
     );
 

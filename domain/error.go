@@ -28,4 +28,7 @@ var (
 	ErrUnknownStatus = errors.New("unknown status")
 
 	ErrUnknownSort = errors.New("unknown sort")
+
+	ErrProjectNotOnReview  = errors.New("project is not on review")
+	ErrApplicationNotFound = errors.New("application not found")
 )

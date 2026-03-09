@@ -41,7 +41,7 @@ type Project struct {
 	Currency      Currency  `json:"currency"`
 	GoalAmount    int64     `json:"goalAmount"`
 	CurrentAmount int64     `json:"currentAmount"`
-	StartedAt     time.Time `json:"startedAt"`
+	StartedAt     *time.Time `json:"startedAt,omitempty"`
 	DurationDays  int       `json:"durationDays"`
 	Status        Status    `json:"status"`
 	IsBoosted     bool      `json:"isBoosted"`
@@ -50,17 +50,33 @@ type Project struct {
 type Status string
 
 const (
+	StatusReview   Status = "review"
 	StatusActive   Status = "active"
 	StatusFinished Status = "finished"
 )
 
 func ValidateStatus(s Status) error {
 	switch s {
-	case StatusActive, StatusFinished:
+	case StatusReview, StatusActive, StatusFinished:
 		return nil
 	default:
 		return ErrUnknownStatus
 	}
+}
+
+type ApplicationStatus string
+
+const (
+	ApplicationStatusPending  ApplicationStatus = "pending"
+	ApplicationStatusRejected ApplicationStatus = "rejected"
+	ApplicationStatusApproved ApplicationStatus = "approved"
+)
+
+type Application struct {
+	Status       ApplicationStatus `json:"status"`
+	RejectReason string            `json:"rejectReason,omitempty"`
+	CreatedAt    time.Time         `json:"createdAt"`
+	Project      Project           `json:"project"`
 }
 
 type Sort string

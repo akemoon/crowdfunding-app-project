@@ -8,10 +8,12 @@ import (
 
 func MapStatusToDB(s domain.Status) (int, error) {
 	switch s {
-	case domain.StatusActive:
+	case domain.StatusReview:
 		return 1, nil
-	case domain.StatusFinished:
+	case domain.StatusActive:
 		return 2, nil
+	case domain.StatusFinished:
+		return 3, nil
 	default:
 		return 0, fmt.Errorf("%w: map status to db err", domain.ErrInternal)
 	}
@@ -20,8 +22,10 @@ func MapStatusToDB(s domain.Status) (int, error) {
 func MapStatusFromDB(id int) (domain.Status, error) {
 	switch id {
 	case 1:
-		return domain.StatusActive, nil
+		return domain.StatusReview, nil
 	case 2:
+		return domain.StatusActive, nil
+	case 3:
 		return domain.StatusFinished, nil
 	default:
 		return "", fmt.Errorf("%w: map status from db err", domain.ErrInternal)
@@ -84,6 +88,39 @@ func MapCurrencyFromDB(id int) (domain.Currency, error) {
 	}
 }
 
+func MapApplicationStatusFromDB(id int) (domain.ApplicationStatus, error) {
+	switch id {
+	case 1:
+		return domain.ApplicationStatusPending, nil
+	case 2:
+		return domain.ApplicationStatusRejected, nil
+	case 3:
+		return domain.ApplicationStatusApproved, nil
+	default:
+		return "", fmt.Errorf("%w: map application status from db err", domain.ErrInternal)
+	}
+}
+
+func MapApplicationFromDB(a ApplicationDB, p ProjectDB) (domain.Application, error) {
+	status, err := MapApplicationStatusFromDB(a.StatusID)
+	if err != nil {
+		return domain.Application{}, err
+	}
+
+	project, err := MapProjectFromDB(p)
+	if err != nil {
+		return domain.Application{}, err
+	}
+	project.StartedAt = nil
+
+	return domain.Application{
+		Status:       status,
+		RejectReason: a.RejectReason,
+		CreatedAt:    a.CreatedAt,
+		Project:      project,
+	}, nil
+}
+
 func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 	category, err := MapCategoryFromDB(p.CategoryID)
 	if err != nil {
@@ -100,6 +137,8 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		return domain.Project{}, err
 	}
 
+	startedAt := p.StartedAt
+
 	return domain.Project{
 		ID:            p.ID,
 		UserID:        p.UserID,
@@ -109,7 +148,7 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		Currency:      currency,
 		GoalAmount:    p.GoalAmount,
 		CurrentAmount: p.CurrentAmount,
-		StartedAt:     p.StartedAt,
+		StartedAt:     &startedAt,
 		DurationDays:  p.DurationDays,
 		Status:        status,
 		IsBoosted:     p.IsBoosted,

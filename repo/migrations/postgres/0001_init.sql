@@ -30,10 +30,10 @@ create table if not exists project_statuses
     name text not null unique
 );
 
--- TODO: add status "on review"
 insert into project_statuses (id, name) values
-(1, 'active'),
-(2, 'finished');
+(1, 'review'),
+(2, 'active'),
+(3, 'finished');
 
 create table if not exists projects
 (
@@ -45,13 +45,32 @@ create table if not exists projects
     currency_id    smallint    not null references currencies(id),
     goal_amount    bigint      not null check (goal_amount > 0),
     current_amount bigint      not null default 0 check (current_amount >= 0),
-    started_at     timestamptz not null default now(),
+    started_at     timestamptz,
     duration_days  smallint    not null,
-    status_id      smallint    not null default 1 references project_statuses(id),  -- TODO: default status is "on review". consider replacing status_id + finished_at with nullable timestamps only (started_at, finished_at, review_added_at)
+    status_id      smallint    not null default 1 references project_statuses(id),
     boosted_until  timestamptz,
     finished_at    timestamptz,
 
     constraint projects_user_id_name_unique unique (user_id, name)
+);
+
+create table if not exists project_application_statuses
+(
+    id   smallint primary key,
+    name text not null unique
+);
+
+insert into project_application_statuses (id, name) values
+(1, 'pending'),
+(2, 'rejected'),
+(3, 'approved');
+
+create table if not exists project_applications
+(
+    project_id    uuid        primary key references projects(id),
+    status_id     smallint    not null default 1 references project_application_statuses(id),
+    reject_reason text        not null default '',
+    created_at    timestamptz not null default now()
 );
 
 create table if not exists finished_projects_outbox_statuses
@@ -76,6 +95,8 @@ create table if not exists finished_projects_outbox
 
 drop table if exists finished_projects_outbox;
 drop table if exists finished_projects_outbox_statuses;
+drop table if exists project_applications;
+drop table if exists project_application_statuses;
 drop table if exists projects;
 drop table if exists project_statuses;
 drop table if exists project_categories;

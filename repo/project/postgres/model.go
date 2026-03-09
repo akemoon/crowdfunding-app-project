@@ -20,3 +20,9 @@ type ProjectDB struct {
 	StatusID      int
 	IsBoosted     bool
 }
+
+type ApplicationDB struct {
+	StatusID     int
+	RejectReason string
+	CreatedAt    time.Time
+}

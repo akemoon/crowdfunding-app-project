@@ -15,4 +15,9 @@ type Repo interface {
 	ListPendingFinishedOutbox(ctx context.Context, limit int) ([]domain.Project, error)
 	MarkSentFinishedOutbox(ctx context.Context, projectID uuid.UUID) error
 	AddContribution(ctx context.Context, projectID uuid.UUID, amount int64) error
+	ApproveProject(ctx context.Context, id uuid.UUID) error
+	RejectProject(ctx context.Context, id uuid.UUID, reason string) error
+	UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.UUID, req domain.CreateProjectReq) error
+	GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID) (domain.Application, error)
+	GetPendingApplications(ctx context.Context) ([]domain.Application, error)
 }
