@@ -206,11 +206,24 @@ values
         now() - interval '50 days', 21
     );
 
+-- strelok: S.T.A.L.K.E.R. reference
+insert into projects (user_id, category_id, name, description, currency_id, goal_amount, current_amount, started_at, duration_days, boosted_until)
+values
+    (
+        '00000000-0000-7000-8000-000000000004', 1,
+        'Документальная экспедиция в Зону отчуждения',
+        'Финансирование научной экспедиции в Чернобыльскую зону отчуждения: радиационные замеры, биологические пробы, видеодокументация.',
+        1, 333000, 111000,
+        now() - interval '3 days', 60,
+        now() + interval '7 days'
+    );
+
 -- +goose Down
 
 delete from projects
 where user_id in (
     '00000000-0000-7000-8000-000000000001',
     '00000000-0000-7000-8000-000000000002',
-    '00000000-0000-7000-8000-000000000003'
+    '00000000-0000-7000-8000-000000000003',
+    '00000000-0000-7000-8000-000000000004'
 );

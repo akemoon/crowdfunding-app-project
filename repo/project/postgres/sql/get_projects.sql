@@ -44,6 +44,7 @@ select
     current_amount,
     started_at,
     duration_days,
+    status_id,
     is_boosted
 from scored
 order by

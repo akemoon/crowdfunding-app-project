@@ -17,6 +17,17 @@ func MapStatusToDB(s domain.Status) (int, error) {
 	}
 }
 
+func MapStatusFromDB(id int) (domain.Status, error) {
+	switch id {
+	case 1:
+		return domain.StatusActive, nil
+	case 2:
+		return domain.StatusFinished, nil
+	default:
+		return "", fmt.Errorf("%w: map status from db err", domain.ErrInternal)
+	}
+}
+
 func MapCategoryToDB(c domain.Category) (int, error) {
 	switch c {
 	case domain.CategoryScience:
@@ -84,6 +95,11 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		return domain.Project{}, err
 	}
 
+	status, err := MapStatusFromDB(p.StatusID)
+	if err != nil {
+		return domain.Project{}, err
+	}
+
 	return domain.Project{
 		ID:            p.ID,
 		UserID:        p.UserID,
@@ -93,8 +109,9 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		Currency:      currency,
 		GoalAmount:    p.GoalAmount,
 		CurrentAmount: p.CurrentAmount,
-		StartedAt:     p.StartDate,
+		StartedAt:     p.StartedAt,
 		DurationDays:  p.DurationDays,
+		Status:        status,
 		IsBoosted:     p.IsBoosted,
 	}, nil
 }

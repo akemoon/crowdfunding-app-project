@@ -15,7 +15,8 @@ type ProjectDB struct {
 	CurrencyID    int
 	GoalAmount    int64
 	CurrentAmount int64
-	StartDate     time.Time
+	StartedAt     time.Time
 	DurationDays  int
+	StatusID      int
 	IsBoosted     bool
 }

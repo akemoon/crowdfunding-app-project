@@ -9,6 +9,7 @@ select
     current_amount,
     started_at,
     duration_days,
+    status_id,
     boosted_until is not null and boosted_until > now() as is_boosted
 from projects
 where id = $1;

@@ -43,6 +43,7 @@ type Project struct {
 	CurrentAmount int64     `json:"currentAmount"`
 	StartedAt     time.Time `json:"startedAt"`
 	DurationDays  int       `json:"durationDays"`
+	Status        Status    `json:"status"`
 	IsBoosted     bool      `json:"isBoosted"`
 }
 
@@ -96,7 +97,6 @@ const (
 	MaxNameLen = 100
 )
 
-// NOTE: maybe my unique field for testing
 func ValidateName(name string) error {
 	if len(name) < MinNameLen || len(name) > MaxNameLen {
 		return ErrInvalidNameLen

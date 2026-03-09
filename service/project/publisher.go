@@ -67,6 +67,11 @@ func (w *PublishWorker) runOnce(ctx context.Context) {
 
 	for _, p := range projects {
 		event := projectPublisher.Event{
+			// EventID = p.ID for deterministic idempotency:
+			// if the worker crashes after publish but before MarkSent,
+			// the re-published event will have the same EventID
+			// and the consumer will deduplicate via processed_events.
+			EventID: p.ID,
 			Type:    projectPublisher.EventTypeFinished,
 			Project: p,
 		}

@@ -72,8 +72,9 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 		&pDB.CurrencyID,
 		&pDB.GoalAmount,
 		&pDB.CurrentAmount,
-		&pDB.StartDate,
+		&pDB.StartedAt,
 		&pDB.DurationDays,
+		&pDB.StatusID,
 		&pDB.IsBoosted,
 	)
 	if err != nil {
@@ -135,8 +136,9 @@ func (r *ProjectRepo) GetProjects(ctx context.Context, req domain.GetProjectsReq
 			&pDB.CurrencyID,
 			&pDB.GoalAmount,
 			&pDB.CurrentAmount,
-			&pDB.StartDate,
+			&pDB.StartedAt,
 			&pDB.DurationDays,
+			&pDB.StatusID,
 			&pDB.IsBoosted,
 		); err != nil {
 			return nil, err
@@ -199,8 +201,9 @@ func (r *ProjectRepo) ListPendingFinishedOutbox(ctx context.Context, limit int) 
 			&pDB.CurrencyID,
 			&pDB.GoalAmount,
 			&pDB.CurrentAmount,
-			&pDB.StartDate,
+			&pDB.StartedAt,
 			&pDB.DurationDays,
+			&pDB.StatusID,
 			&pDB.IsBoosted,
 		); err != nil {
 			return nil, err
