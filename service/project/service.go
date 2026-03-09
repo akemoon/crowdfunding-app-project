@@ -95,3 +95,12 @@ func (s *Service) GetProjects(ctx context.Context, req domain.GetProjectsReq) (d
 
 	return domain.GetProjectsResp{Items: items}, nil
 }
+
+func (s *Service) AddContribution(ctx context.Context, projectID uuid.UUID, amount int64) error {
+	err := s.repo.AddContribution(ctx, projectID, amount)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
+}

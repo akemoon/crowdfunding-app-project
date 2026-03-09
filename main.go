@@ -14,8 +14,10 @@ const (
 	envPgDSN           = "POSTGRES_DSN"
 	envPgMigrationsDir = "POSTGRES_MIGRATIONS_DIR"
 
-	envKafkaBrokers = "KAFKA_BROKERS"
-	envProjectTopic = "PROJECT_TOPIC"
+	envKafkaBrokers              = "KAFKA_BROKERS"
+	envProjectTopic              = "PROJECT_TOPIC"
+	envContributionTopic         = "CONTRIBUTION_TOPIC"
+	envContributionConsumerGroup = "CONTRIBUTION_CONSUMER_GROUP"
 
 	// TODO: add envs
 	// envFinishWorkerInterval  = "FINISH_WORKER_INTERVAL"
@@ -77,11 +79,23 @@ func loadConfigFromEnv() (AppConfig, error) {
 		return AppConfig{}, err
 	}
 
+	contributionTopic, err := getRequiredEnv(envContributionTopic)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
+	contributionConsumerGroup, err := getRequiredEnv(envContributionConsumerGroup)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
 	return AppConfig{
-		PostgresDSN:           dsn,
-		PostgresMigrationsDir: migrationsDir,
-		KafkaBrokers:          brokers,
-		ProjectTopic:          topic,
+		PostgresDSN:                  dsn,
+		PostgresMigrationsDir:        migrationsDir,
+		KafkaBrokers:                 brokers,
+		ProjectTopic:                 topic,
+		ContributionTopic:            contributionTopic,
+		ContributionConsumerGroup:    contributionConsumerGroup,
 	}, nil
 }
 

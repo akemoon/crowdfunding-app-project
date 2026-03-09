@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/akemoon/crowdfunding-app-project/api"
+	"github.com/akemoon/crowdfunding-app-project/cluster/contribution"
 	"github.com/akemoon/crowdfunding-app-project/metrics"
 	"github.com/akemoon/crowdfunding-app-project/publisher/project"
 	projectRepo "github.com/akemoon/crowdfunding-app-project/repo/project/postgres"
@@ -28,8 +29,10 @@ type AppConfig struct {
 	PostgresDSN           string
 	PostgresMigrationsDir string
 
-	KafkaBrokers []string
-	ProjectTopic string
+	KafkaBrokers              []string
+	ProjectTopic              string
+	ContributionTopic         string
+	ContributionConsumerGroup string
 
 	// TODO: add params
 	// FinishWorkerInterval  time.Duration
@@ -47,8 +50,9 @@ type App struct {
 
 	publisher *project.Publisher
 
-	finishWorker  *projectSvc.FinishWorker
-	publishWorker *projectSvc.PublishWorker
+	finishWorker         *projectSvc.FinishWorker
+	publishWorker        *projectSvc.PublishWorker
+	contributionConsumer *contribution.Consumer
 
 	projectSvc *projectSvc.Service
 
@@ -121,6 +125,13 @@ func (a *App) InitServices() error {
 
 	a.projectSvc = projectSvc.NewService(repo)
 
+	a.contributionConsumer = contribution.New(
+		a.config.KafkaBrokers,
+		a.config.ContributionTopic,
+		a.config.ContributionConsumerGroup,
+		a.projectSvc,
+	)
+
 	return nil
 }
 
@@ -138,6 +149,9 @@ func (a *App) Run() error {
 
 	log.Printf("start publish worker")
 	go a.publishWorker.Run(a.ctx)
+
+	log.Printf("start contribution consumer")
+	go a.contributionConsumer.Run(a.ctx)
 
 	log.Printf("http server listening on %s", defaultHTTPAddr)
 

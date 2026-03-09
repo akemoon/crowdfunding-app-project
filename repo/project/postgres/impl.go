@@ -235,3 +235,16 @@ func (r *ProjectRepo) MarkSentFinishedOutbox(ctx context.Context, projectID uuid
 
 	return nil
 }
+
+//go:embed sql/add_contribution.sql
+var addContributionSQL string
+
+// TODO: idempotency - add processed_events table to skip duplicate contribution.created events
+func (r *ProjectRepo) AddContribution(ctx context.Context, projectID uuid.UUID, amount int64) error {
+	_, err := r.db.ExecContext(ctx, addContributionSQL, projectID, amount)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
