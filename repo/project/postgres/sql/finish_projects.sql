@@ -1,6 +1,7 @@
 with updated as (
     update projects p
-    set status_id = 2
+    set status_id = 2,
+        finished_at = now()
     where p.status_id = 1
       and p.started_at + (p.duration_days * interval '1 day') <= now()
     returning

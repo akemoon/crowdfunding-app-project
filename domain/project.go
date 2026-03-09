@@ -32,10 +32,6 @@ type CreateProjectReq struct {
 	DurationDays int      `json:"durationDays"`
 }
 
-type ProjectsListResp struct {
-	Items []Project `json:"items"`
-}
-
 type Project struct {
 	ID            uuid.UUID `json:"id"`
 	UserID        uuid.UUID `json:"userID"`
@@ -47,6 +43,52 @@ type Project struct {
 	CurrentAmount int64     `json:"currentAmount"`
 	StartedAt     time.Time `json:"startedAt"`
 	DurationDays  int       `json:"durationDays"`
+	IsBoosted     bool      `json:"isBoosted"`
+}
+
+type Status string
+
+const (
+	StatusActive   Status = "active"
+	StatusFinished Status = "finished"
+)
+
+func ValidateStatus(s Status) error {
+	switch s {
+	case StatusActive, StatusFinished:
+		return nil
+	default:
+		return ErrUnknownStatus
+	}
+}
+
+type Sort string
+
+const (
+	SortDefault Sort = "default"
+	SortDate    Sort = "date"
+)
+
+func ValidateSort(s Sort) error {
+	switch s {
+	case SortDefault, SortDate:
+		return nil
+	default:
+		return ErrUnknownSort
+	}
+}
+
+type GetProjectsReq struct {
+	Status   Status
+	Sort     Sort
+	Category *Category
+	Search   *string
+	Limit    int
+	Offset   int
+}
+
+type GetProjectsResp struct {
+	Items []Project `json:"items"`
 }
 
 const (

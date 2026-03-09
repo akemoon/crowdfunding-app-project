@@ -24,4 +24,8 @@ var (
 	ErrUnknownConflict = errors.New("unknown conflict")
 
 	ErrInternal = errors.New("internal error")
+
+	ErrUnknownStatus = errors.New("unknown status")
+
+	ErrUnknownSort = errors.New("unknown sort")
 )

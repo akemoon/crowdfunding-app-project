@@ -17,4 +17,5 @@ type ProjectDB struct {
 	CurrentAmount int64
 	StartDate     time.Time
 	DurationDays  int
+	IsBoosted     bool
 }

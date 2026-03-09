@@ -25,8 +25,9 @@ func NewServer() *Server {
 }
 
 func (s *Server) AddProjectHandlers(svc *project.Service) {
-	s.r.HandleFunc("POST /project", handler.CreateProject(svc))
-	s.r.HandleFunc("GET /project/{id}", handler.GetProjectByID(svc))
+	s.r.HandleFunc("POST /projects", handler.CreateProject(svc))
+	s.r.HandleFunc("GET /projects", handler.GetProjects(svc))
+	s.r.HandleFunc("GET /projects/{id}", handler.GetProjectByID(svc))
 }
 
 func (s *Server) AddSwaggerUI() {

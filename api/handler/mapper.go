@@ -23,10 +23,36 @@ var (
 )
 
 var (
+	MapRuleUnknownStatus = httplib.ErrMapRule{
+		Err:     domain.ErrUnknownStatus,
+		Status:  http.StatusBadRequest,
+		Code:    "unknown_status",
+		Message: domain.ErrUnknownStatus.Error(),
+	}
+	MapRuleUnknownCategory = httplib.ErrMapRule{
+		Err:     domain.ErrUnknownCategory,
+		Status:  http.StatusBadRequest,
+		Code:    "unknown_category",
+		Message: domain.ErrUnknownCategory.Error(),
+	}
+	MapRuleUnknownSort = httplib.ErrMapRule{
+		Err:     domain.ErrUnknownSort,
+		Status:  http.StatusBadRequest,
+		Code:    "unknown_sort",
+		Message: domain.ErrUnknownSort.Error(),
+	}
+)
+
+var (
 	CreateProjectMapRules = []httplib.ErrMapRule{
 		MapRuleProjectExists,
 	}
 	GetProjectByIDMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
+	}
+	GetProjectsMapRules = []httplib.ErrMapRule{
+		MapRuleUnknownStatus,
+		MapRuleUnknownCategory,
+		MapRuleUnknownSort,
 	}
 )

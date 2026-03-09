@@ -47,25 +47,12 @@ create table if not exists projects
     current_amount bigint      not null default 0 check (current_amount >= 0),
     started_at     timestamptz not null default now(),
     duration_days  smallint    not null,
-    status_id      smallint    not null default 1 references project_statuses(id),  -- TODO: default status is "on review"
+    status_id      smallint    not null default 1 references project_statuses(id),  -- TODO: default status is "on review". consider replacing status_id + finished_at with nullable timestamps only (started_at, finished_at, review_added_at)
+    boosted_until  timestamptz,
+    finished_at    timestamptz,
 
     constraint projects_user_id_name_unique unique (user_id, name)
 );
-
-insert into projects (
-    user_id,
-    category_id,
-    name,
-    description,
-    currency_id,
-    goal_amount,
-    current_amount,
-    started_at,
-    duration_days
-) values
-('019bfb8f-d27b-7089-8296-0584baf0408e', 1, 'Лаборатория по астрофизике', 'Сбор средств на оборудование и материалы для студенческой лаборатории.', 1, 150000, 125213, now() - interval '10 days', 20),
-('019bfb8f-f71b-7abc-abbd-f8cbfe2a38d4', 2, 'Робот-помощник', 'Сбор средств на создание бытовых роботов-помощников.', 2, 10000, 9243, now() - interval '120 days', 100),
-('019bfb90-1e61-7016-ae5b-73d7c439cccd', 5, 'Музыкальный альбом "Северный ветер"', 'Запись дебютного альбома с живыми инструментами.', 1, 25000, 19320, now() - interval '5 days', 15);
 
 create table if not exists finished_projects_outbox_statuses
 (

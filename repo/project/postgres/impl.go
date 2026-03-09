@@ -74,6 +74,7 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 		&pDB.CurrentAmount,
 		&pDB.StartDate,
 		&pDB.DurationDays,
+		&pDB.IsBoosted,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -88,6 +89,72 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 	}
 
 	return p, nil
+}
+
+//go:embed sql/get_projects.sql
+var getProjectsSQL string
+
+func (r *ProjectRepo) GetProjects(ctx context.Context, req domain.GetProjectsReq) ([]domain.Project, error) {
+	statusID, err := MapStatusToDB(req.Status)
+	if err != nil {
+		return nil, err
+	}
+
+	var categoryID interface{}
+	if req.Category != nil {
+		id, err := MapCategoryToDB(*req.Category)
+		if err != nil {
+			return nil, err
+		}
+		categoryID = id
+	}
+
+	rows, err := r.db.QueryContext(ctx, getProjectsSQL,
+		statusID,
+		categoryID,
+		req.Search,
+		req.Limit,
+		req.Offset,
+		string(req.Sort),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []domain.Project
+
+	for rows.Next() {
+		var pDB ProjectDB
+		if err := rows.Scan(
+			&pDB.ID,
+			&pDB.UserID,
+			&pDB.CategoryID,
+			&pDB.Name,
+			&pDB.Description,
+			&pDB.CurrencyID,
+			&pDB.GoalAmount,
+			&pDB.CurrentAmount,
+			&pDB.StartDate,
+			&pDB.DurationDays,
+			&pDB.IsBoosted,
+		); err != nil {
+			return nil, err
+		}
+
+		p, err := MapProjectFromDB(pDB)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 //go:embed sql/finish_projects.sql
@@ -134,6 +201,7 @@ func (r *ProjectRepo) ListPendingFinishedOutbox(ctx context.Context, limit int) 
 			&pDB.CurrentAmount,
 			&pDB.StartDate,
 			&pDB.DurationDays,
+			&pDB.IsBoosted,
 		); err != nil {
 			return nil, err
 		}

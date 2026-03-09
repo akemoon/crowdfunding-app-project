@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	_ "github.com/akemoon/crowdfunding-app-project/docs"
 )
 
 const (

@@ -64,7 +64,34 @@ func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.Proj
 	return p, nil
 }
 
-// TODO: use search keys (categorie, status, name, user_id)
-//
-//func (s *Service) GetProjects() ([]project.Project, error) {
-//}
+func (s *Service) GetProjects(ctx context.Context, req domain.GetProjectsReq) (domain.GetProjectsResp, error) {
+	if err := domain.ValidateStatus(req.Status); err != nil {
+		return domain.GetProjectsResp{}, err
+	}
+
+	if req.Sort == "" {
+		req.Sort = domain.SortDefault
+	} else if err := domain.ValidateSort(req.Sort); err != nil {
+		return domain.GetProjectsResp{}, err
+	}
+
+	if req.Category != nil {
+		if err := domain.ValidateCategory(*req.Category); err != nil {
+			return domain.GetProjectsResp{}, err
+		}
+	}
+
+	if req.Limit <= 0 || req.Limit > 100 {
+		req.Limit = 20
+	}
+	if req.Offset < 0 {
+		req.Offset = 0
+	}
+
+	items, err := s.repo.GetProjects(ctx, req)
+	if err != nil {
+		return domain.GetProjectsResp{}, fmt.Errorf("repo: %w", err)
+	}
+
+	return domain.GetProjectsResp{Items: items}, nil
+}

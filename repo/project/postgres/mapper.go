@@ -6,6 +6,17 @@ import (
 	"github.com/akemoon/crowdfunding-app-project/domain"
 )
 
+func MapStatusToDB(s domain.Status) (int, error) {
+	switch s {
+	case domain.StatusActive:
+		return 1, nil
+	case domain.StatusFinished:
+		return 2, nil
+	default:
+		return 0, fmt.Errorf("%w: map status to db err", domain.ErrInternal)
+	}
+}
+
 func MapCategoryToDB(c domain.Category) (int, error) {
 	switch c {
 	case domain.CategoryScience:
@@ -84,5 +95,6 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		CurrentAmount: p.CurrentAmount,
 		StartedAt:     p.StartDate,
 		DurationDays:  p.DurationDays,
+		IsBoosted:     p.IsBoosted,
 	}, nil
 }

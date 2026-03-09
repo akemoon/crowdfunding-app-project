@@ -15,7 +15,69 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/project": {
+        "/projects": {
+            "get": {
+                "description": "Returns a paginated list of projects filtered by status, category and search.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "Get projects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Status filter (active|finished), default: active",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category filter",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (1-100, default: 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.GetProjectsResp"
+                        }
+                    },
+                    "400": {
+                        "description": "unknown_status | unknown_category",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_error",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a new project by given payload.",
                 "consumes": [
@@ -56,7 +118,7 @@ const docTemplate = `{
                     "400": {
                         "description": "validation_error | invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
+                            "$ref": "#/definitions/httplib.ErrResp"
                         }
                     },
                     "401": {
@@ -74,19 +136,19 @@ const docTemplate = `{
                     "409": {
                         "description": "project_exists",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
+                            "$ref": "#/definitions/httplib.ErrResp"
                         }
                     },
                     "500": {
                         "description": "internal_error",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
+                            "$ref": "#/definitions/httplib.ErrResp"
                         }
                     }
                 }
             }
         },
-        "/project/{id}": {
+        "/projects/{id}": {
             "get": {
                 "description": "Returns a project by its id.",
                 "produces": [
@@ -121,7 +183,7 @@ const docTemplate = `{
                     "404": {
                         "description": "project_not_found",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
+                            "$ref": "#/definitions/httplib.ErrResp"
                         }
                     },
                     "405": {
@@ -133,7 +195,7 @@ const docTemplate = `{
                     "500": {
                         "description": "internal_error",
                         "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
+                            "$ref": "#/definitions/httplib.ErrResp"
                         }
                     }
                 }
@@ -192,6 +254,17 @@ const docTemplate = `{
                 "CurrencyUSD"
             ]
         },
+        "domain.GetProjectsResp": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Project"
+                    }
+                }
+            }
+        },
         "domain.Project": {
             "type": "object",
             "properties": {
@@ -216,6 +289,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "isBoosted": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -227,31 +303,17 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/handler.FieldError"
-                    }
-                }
-            }
-        },
-        "handler.FieldError": {
+        "httplib.ErrResp": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "string"
                 },
-                "field": {
-                    "type": "string"
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "message": {
                     "type": "string"
