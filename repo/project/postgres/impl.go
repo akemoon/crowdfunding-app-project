@@ -408,3 +408,23 @@ func (r *ProjectRepo) GetPendingApplications(ctx context.Context) ([]domain.Appl
 
 	return out, nil
 }
+
+//go:embed sql/boost_project.sql
+var boostProjectSQL string
+
+func (r *ProjectRepo) BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error {
+	res, err := r.db.ExecContext(ctx, boostProjectSQL, projectID, userID, days)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectNotFound
+	}
+
+	return nil
+}

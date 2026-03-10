@@ -20,4 +20,6 @@ type Repo interface {
 	UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.UUID, req domain.CreateProjectReq) error
 	GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID) (domain.Application, error)
 	GetPendingApplications(ctx context.Context) ([]domain.Application, error)
+
+	BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error
 }

@@ -370,6 +370,90 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/projects/{id}/boost": {
+            "post": {
+                "description": "Boosts a project visibility using a promo code.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "project"
+                ],
+                "summary": "Boost project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "X-User-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Promo code payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.BoostProjectReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid project id | invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "promo_code_access_denied",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    },
+                    "404": {
+                        "description": "project_not_found | promo_code_not_found",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    },
+                    "409": {
+                        "description": "promo_code_already_used",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_error",
+                        "schema": {
+                            "$ref": "#/definitions/httplib.ErrResp"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -488,6 +572,14 @@ const docTemplate = `{
                 "StatusActive",
                 "StatusFinished"
             ]
+        },
+        "handler.BoostProjectReq": {
+            "type": "object",
+            "properties": {
+                "promoCode": {
+                    "type": "string"
+                }
+            }
         },
         "handler.RejectProjectReq": {
             "type": "object",

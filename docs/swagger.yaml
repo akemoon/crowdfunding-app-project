@@ -80,6 +80,11 @@ definitions:
     - StatusReview
     - StatusActive
     - StatusFinished
+  handler.BoostProjectReq:
+    properties:
+      promoCode:
+        type: string
+    type: object
   handler.RejectProjectReq:
     properties:
       reason:
@@ -338,6 +343,62 @@ paths:
           schema:
             $ref: '#/definitions/httplib.ErrResp'
       summary: Get project by id
+      tags:
+      - project
+  /projects/{id}/boost:
+    post:
+      consumes:
+      - application/json
+      description: Boosts a project visibility using a promo code.
+      parameters:
+      - description: User ID (UUID)
+        in: header
+        name: X-User-ID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Promo code payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BoostProjectReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "400":
+          description: invalid project id | invalid request body
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "403":
+          description: promo_code_access_denied
+          schema:
+            $ref: '#/definitions/httplib.ErrResp'
+        "404":
+          description: project_not_found | promo_code_not_found
+          schema:
+            $ref: '#/definitions/httplib.ErrResp'
+        "409":
+          description: promo_code_already_used
+          schema:
+            $ref: '#/definitions/httplib.ErrResp'
+        "500":
+          description: internal_error
+          schema:
+            $ref: '#/definitions/httplib.ErrResp'
+      summary: Boost project
       tags:
       - project
 swagger: "2.0"

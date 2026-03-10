@@ -28,6 +28,7 @@ func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("POST /projects", handler.CreateProject(svc))
 	s.r.HandleFunc("GET /projects", handler.GetProjects(svc))
 	s.r.HandleFunc("GET /projects/{id}", handler.GetProjectByID(svc))
+	s.r.HandleFunc("POST /projects/{id}/boost", handler.BoostProject(svc))
 	// TODO: add approve, reject, apps
 }
 

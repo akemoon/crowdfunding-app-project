@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/akemoon/crowdfunding-app-project/client/promocode"
 	"github.com/akemoon/crowdfunding-app-project/domain"
 	"github.com/akemoon/crowdfunding-app-project/golib/httplib"
 )
@@ -19,6 +20,18 @@ var (
 		Status:  http.StatusNotFound,
 		Code:    "project_not_found",
 		Message: domain.ErrProjectNotFound.Error(),
+	}
+	MapRuleProjectNotOnReview = httplib.ErrMapRule{
+		Err:     domain.ErrProjectNotOnReview,
+		Status:  http.StatusConflict,
+		Code:    "project_not_on_review",
+		Message: domain.ErrProjectNotOnReview.Error(),
+	}
+	MapRuleApplicationNotFound = httplib.ErrMapRule{
+		Err:     domain.ErrApplicationNotFound,
+		Status:  http.StatusNotFound,
+		Code:    "application_not_found",
+		Message: domain.ErrApplicationNotFound.Error(),
 	}
 )
 
@@ -44,6 +57,27 @@ var (
 )
 
 var (
+	MapRulePromoCodeNotFound = httplib.ErrMapRule{
+		Err:     promocode.ErrPromoCodeNotFound,
+		Status:  http.StatusNotFound,
+		Code:    "promo_code_not_found",
+		Message: promocode.ErrPromoCodeNotFound.Error(),
+	}
+	MapRulePromoCodeUsed = httplib.ErrMapRule{
+		Err:     promocode.ErrPromoCodeUsed,
+		Status:  http.StatusConflict,
+		Code:    "promo_code_already_used",
+		Message: promocode.ErrPromoCodeUsed.Error(),
+	}
+	MapRulePromoCodeAccessDenied = httplib.ErrMapRule{
+		Err:     promocode.ErrPromoCodeForbidden,
+		Status:  http.StatusForbidden,
+		Code:    "promo_code_access_denied",
+		Message: promocode.ErrPromoCodeForbidden.Error(),
+	}
+)
+
+var (
 	CreateProjectMapRules = []httplib.ErrMapRule{
 		MapRuleProjectExists,
 	}
@@ -54,5 +88,24 @@ var (
 		MapRuleUnknownStatus,
 		MapRuleUnknownCategory,
 		MapRuleUnknownSort,
+	}
+	ApproveProjectMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotOnReview,
+	}
+	RejectProjectMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotOnReview,
+	}
+	GetApplicationByProjectIDMapRules = []httplib.ErrMapRule{
+		MapRuleApplicationNotFound,
+	}
+	UpdateProjectMapRules = []httplib.ErrMapRule{
+		MapRuleApplicationNotFound,
+		MapRuleProjectExists,
+	}
+	BoostProjectMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotFound,
+		MapRulePromoCodeNotFound,
+		MapRulePromoCodeUsed,
+		MapRulePromoCodeAccessDenied,
 	}
 )

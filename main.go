@@ -19,6 +19,8 @@ const (
 	envContributionTopic         = "CONTRIBUTION_TOPIC"
 	envContributionConsumerGroup = "CONTRIBUTION_CONSUMER_GROUP"
 
+	envPromoBaseURL = "PROMO_BASE_URL"
+
 	// TODO: add envs
 	// envFinishWorkerInterval  = "FINISH_WORKER_INTERVAL"
 	// envPublishWorkerInterval = "PUBLISH_WORKER_INTERVAL"
@@ -89,13 +91,19 @@ func loadConfigFromEnv() (AppConfig, error) {
 		return AppConfig{}, err
 	}
 
+	promoBaseURL, err := getRequiredEnv(envPromoBaseURL)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
 	return AppConfig{
-		PostgresDSN:                  dsn,
-		PostgresMigrationsDir:        migrationsDir,
-		KafkaBrokers:                 brokers,
-		ProjectTopic:                 topic,
-		ContributionTopic:            contributionTopic,
-		ContributionConsumerGroup:    contributionConsumerGroup,
+		PostgresDSN:               dsn,
+		PostgresMigrationsDir:     migrationsDir,
+		KafkaBrokers:              brokers,
+		ProjectTopic:              topic,
+		ContributionTopic:         contributionTopic,
+		ContributionConsumerGroup: contributionConsumerGroup,
+		PromoBaseURL:              promoBaseURL,
 	}, nil
 }
 

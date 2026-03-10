@@ -251,4 +251,56 @@ func RejectProject(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-// TODO: boost project req -> sync to promo
+type BoostProjectReq struct {
+	PromoCode string `json:"promoCode"`
+}
+
+// @Summary Boost project
+// @Description Boosts a project visibility using a promo code.
+// @Tags project
+// @Accept json
+// @Produce json
+// @Param X-User-ID header string true "User ID (UUID)"
+// @Param id path string true "Project ID"
+// @Param body body BoostProjectReq true "Promo code payload"
+// @Success 200 {string} string "ok"
+// @Failure 400 {string} string "invalid project id | invalid request body"
+// @Failure 401 {string} string "unauthorized"
+// @Failure 403 {object} httplib.ErrResp "promo_code_access_denied"
+// @Failure 404 {object} httplib.ErrResp "project_not_found | promo_code_not_found"
+// @Failure 409 {object} httplib.ErrResp "promo_code_already_used"
+// @Failure 500 {object} httplib.ErrResp "internal_error"
+// @Router /projects/{id}/boost [post]
+func BoostProject(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		var req BoostProjectReq
+
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.BoostProject(r.Context(), userID, id, req.PromoCode)
+		if err != nil {
+			log.Printf("BoostProject: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, BoostProjectMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}

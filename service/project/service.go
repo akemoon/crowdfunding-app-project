@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/akemoon/crowdfunding-app-project/client/promocode"
 	"github.com/akemoon/crowdfunding-app-project/domain"
 	"github.com/akemoon/crowdfunding-app-project/golib/validation"
 	"github.com/akemoon/crowdfunding-app-project/repo/project"
@@ -11,12 +12,14 @@ import (
 )
 
 type Service struct {
-	repo project.Repo
+	repo  project.Repo
+	promo promocode.Client
 }
 
-func NewService(r project.Repo) *Service {
+func NewService(r project.Repo, promo promocode.Client) *Service {
 	return &Service{
-		repo: r,
+		repo:  r,
+		promo: promo,
 	}
 }
 
@@ -142,6 +145,35 @@ func (s *Service) GetPendingApplications(ctx context.Context) ([]domain.Applicat
 	}
 
 	return apps, nil
+}
+
+func (s *Service) BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, promoCode string) error {
+	p, err := s.repo.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	if p.UserID != userID || p.Status != domain.StatusActive {
+		return domain.ErrProjectNotFound
+	}
+
+	// TODO: mayne business rule - consider rejecting boost for projects with little time remaining
+	// to reduce the chance of promo code being consumed on a nearly-finished project.
+
+	days, err := s.promo.UsePromoCode(ctx, userID, promoCode, "boost_project")
+	if err != nil {
+		return err
+	}
+
+	// NOTE: non-atomic cross-service operation.
+	// If BoostProject fails here, the promo code is already consumed but boost is not applied.
+	// Proper fix: saga pattern with compensation (refund promo code via rollback API).
+	err = s.repo.BoostProject(ctx, userID, projectID, days)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
 }
 
 // TODO: cycle

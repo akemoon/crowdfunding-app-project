@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/akemoon/crowdfunding-app-project/api"
+	"github.com/akemoon/crowdfunding-app-project/client/promocode/resty"
 	"github.com/akemoon/crowdfunding-app-project/cluster/contribution"
 	"github.com/akemoon/crowdfunding-app-project/metrics"
 	"github.com/akemoon/crowdfunding-app-project/publisher/project"
@@ -38,6 +39,8 @@ type AppConfig struct {
 	// FinishWorkerInterval  time.Duration
 	// PublishWorkerInterval time.Duration
 	// PublishWorkerBatch    int
+
+	PromoBaseURL string
 
 	HTTPAddr string
 }
@@ -123,7 +126,9 @@ func (a *App) InitServices() error {
 		defaultPublishBatch,
 	)
 
-	a.projectSvc = projectSvc.NewService(repo)
+	promoClient := resty.NewPromoClient(a.config.PromoBaseURL)
+
+	a.projectSvc = projectSvc.NewService(repo, promoClient)
 
 	a.contributionConsumer = contribution.New(
 		a.config.KafkaBrokers,
