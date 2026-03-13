@@ -12,28 +12,19 @@ import (
 	"github.com/google/uuid"
 )
 
-const userIDHeader = "X-User-ID"
-const userRoleHeader = "X-User-Role"
-const managerRole = "Manager"
+// TODO: extract auth middleware for X-User-ID and X-User-Role checks
+// to avoid duplicating the auth/role guard logic in every handler.
+
+const (
+	userIDHeader   = "X-User-ID"
+	userRoleHeader = "X-User-Role"
+	moderatorRole  = "moderator"
+)
 
 type RejectProjectReq struct {
 	Reason string `json:"reason"`
 }
 
-// @Summary Create project
-// @Description Creates a new project by given payload.
-// @Tags project
-// @Accept json
-// @Produce json
-// @Param X-User-ID header string true "User ID (UUID)"
-// @Param body body domain.CreateProjectReq true "Project create payload"
-// @Success 201 {string} string "created"
-// @Failure 400 {object} httplib.ErrResp "validation_error | invalid request body"
-// @Failure 401 {string} string "unauthorized"
-// @Failure 405 {string} string "method not allowed"
-// @Failure 409 {object} httplib.ErrResp "project_exists"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /projects [post]
 func CreateProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -62,20 +53,6 @@ func CreateProject(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-// @Summary Get projects
-// @Description Returns a paginated list of projects filtered by status, category and search.
-// @Tags project
-// @Produce json
-// @Param status query string false "Status filter (active|finished), default: active"
-// @Param sort query string false "Sort order (default|date), default: default"
-// @Param category query string false "Category filter (science|tech|architecture_and_urban|sport|music)"
-// @Param search query string false "Search by name"
-// @Param limit query int false "Page size (1-100, default: 20)"
-// @Param offset query int false "Offset (default: 0)"
-// @Success 200 {object} domain.GetProjectsResp
-// @Failure 400 {object} httplib.ErrResp "unknown_status | unknown_sort | unknown_category"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /projects [get]
 func GetProjects(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -120,17 +97,6 @@ func GetProjects(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-// @Summary Get project by id
-// @Description Returns a project by its id.
-// @Tags project
-// @Produce json
-// @Param id path string true "Project ID"
-// @Success 200 {object} domain.Project
-// @Failure 400 {string} string "invalid project id"
-// @Failure 404 {object} httplib.ErrResp "project_not_found"
-// @Failure 405 {string} string "method not allowed"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /projects/{id} [get]
 func GetProjectByID(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := uuid.Parse(r.PathValue("id"))
@@ -151,20 +117,6 @@ func GetProjectByID(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-// @Summary Approve project application
-// @Description Approves a project application and moves project to active.
-// @Tags manager
-// @Produce json
-// @Param X-User-ID header string true "User ID (UUID)"
-// @Param X-User-Role header string true "User role (must be Manager)"
-// @Param id path string true "Project ID"
-// @Success 200 {object} map[string]string "status=ok"
-// @Failure 400 {string} string "invalid project id"
-// @Failure 401 {string} string "unauthorized"
-// @Failure 403 {string} string "forbidden"
-// @Failure 409 {object} httplib.ErrResp "project_not_on_review"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /manager/applications/{id}/approve [post]
 func ApproveProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -173,7 +125,7 @@ func ApproveProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get(userRoleHeader) != managerRole {
+		if r.Header.Get(userRoleHeader) != moderatorRole {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
@@ -187,7 +139,7 @@ func ApproveProject(svc *project.Service) http.HandlerFunc {
 		err = svc.ApproveProject(r.Context(), id)
 		if err != nil {
 			log.Printf("ApproveProject: %v", err)
-			status, errResp := httplib.MapErrToHTTP(err, nil)
+			status, errResp := httplib.MapErrToHTTP(err, ApproveProjectMapRules)
 			httplib.WriteJSON(w, status, errResp)
 			return
 		}
@@ -196,22 +148,6 @@ func ApproveProject(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-// @Summary Reject project application
-// @Description Rejects a project application with reason.
-// @Tags manager
-// @Accept json
-// @Produce json
-// @Param X-User-ID header string true "User ID (UUID)"
-// @Param X-User-Role header string true "User role (must be Manager)"
-// @Param id path string true "Project ID"
-// @Param body body RejectProjectReq true "Reject reason payload"
-// @Success 200 {object} map[string]string "status=ok"
-// @Failure 400 {string} string "invalid project id | invalid request body"
-// @Failure 401 {string} string "unauthorized"
-// @Failure 403 {string} string "forbidden"
-// @Failure 409 {object} httplib.ErrResp "project_not_on_review"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /manager/applications/{id}/reject [post]
 func RejectProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -220,7 +156,7 @@ func RejectProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get(userRoleHeader) != managerRole {
+		if r.Header.Get(userRoleHeader) != moderatorRole {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
@@ -242,7 +178,7 @@ func RejectProject(svc *project.Service) http.HandlerFunc {
 		err = svc.RejectProject(r.Context(), id, req.Reason)
 		if err != nil {
 			log.Printf("RejectProject: %v", err)
-			status, errResp := httplib.MapErrToHTTP(err, nil)
+			status, errResp := httplib.MapErrToHTTP(err, RejectProjectMapRules)
 			httplib.WriteJSON(w, status, errResp)
 			return
 		}
@@ -251,26 +187,117 @@ func RejectProject(svc *project.Service) http.HandlerFunc {
 	}
 }
 
+func GetMyApplications(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		managerID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Header.Get(userRoleHeader) != moderatorRole {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		apps, err := svc.GetMyApplications(r.Context(), managerID)
+		if err != nil {
+			log.Printf("GetMyApplications: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, apps)
+	}
+}
+
+func TakeApplication(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		managerID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Header.Get(userRoleHeader) != moderatorRole {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.TakeApplication(r.Context(), id, managerID)
+		if err != nil {
+			log.Printf("TakeApplication: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, TakeApplicationMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func GetApplicationByProjectID(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		app, err := svc.GetApplicationByProjectID(r.Context(), id, userID)
+		if err != nil {
+			log.Printf("GetApplicationByProjectID: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, GetApplicationByProjectIDMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, app)
+	}
+}
+
+func GetPendingApplications(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Header.Get(userRoleHeader) != moderatorRole {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		apps, err := svc.GetPendingApplications(r.Context())
+		if err != nil {
+			log.Printf("GetPendingApplications: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, apps)
+	}
+}
+
 type BoostProjectReq struct {
 	PromoCode string `json:"promoCode"`
 }
 
-// @Summary Boost project
-// @Description Boosts a project visibility using a promo code.
-// @Tags project
-// @Accept json
-// @Produce json
-// @Param X-User-ID header string true "User ID (UUID)"
-// @Param id path string true "Project ID"
-// @Param body body BoostProjectReq true "Promo code payload"
-// @Success 200 {string} string "ok"
-// @Failure 400 {string} string "invalid project id | invalid request body"
-// @Failure 401 {string} string "unauthorized"
-// @Failure 403 {object} httplib.ErrResp "promo_code_access_denied"
-// @Failure 404 {object} httplib.ErrResp "project_not_found | promo_code_not_found"
-// @Failure 409 {object} httplib.ErrResp "promo_code_already_used"
-// @Failure 500 {object} httplib.ErrResp "internal_error"
-// @Router /projects/{id}/boost [post]
 func BoostProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)

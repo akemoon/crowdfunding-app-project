@@ -15,7 +15,7 @@ type ProjectDB struct {
 	CurrencyID    int
 	GoalAmount    int64
 	CurrentAmount int64
-	StartedAt     time.Time
+	StartedAt     *time.Time
 	DurationDays  int
 	StatusID      int
 	IsBoosted     bool
@@ -23,6 +23,9 @@ type ProjectDB struct {
 
 type ApplicationDB struct {
 	StatusID     int
+	AssignedTo   *uuid.UUID
 	RejectReason string
 	CreatedAt    time.Time
+	AssignedAt   *time.Time
+	ProcessedAt  *time.Time
 }

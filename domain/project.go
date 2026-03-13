@@ -68,6 +68,7 @@ type ApplicationStatus string
 
 const (
 	ApplicationStatusPending  ApplicationStatus = "pending"
+	ApplicationStatusInReview ApplicationStatus = "review"
 	ApplicationStatusRejected ApplicationStatus = "rejected"
 	ApplicationStatusApproved ApplicationStatus = "approved"
 )
@@ -76,7 +77,9 @@ type Application struct {
 	Status       ApplicationStatus `json:"status"`
 	RejectReason string            `json:"rejectReason,omitempty"`
 	CreatedAt    time.Time         `json:"createdAt"`
-	Project      Project           `json:"project"`
+	AssignedAt   *time.Time        `json:"assignedAt,omitempty"`
+	ProcessedAt  *time.Time        `json:"processedAt,omitempty"`
+	Project      *Project          `json:"project,omitempty"`
 }
 
 type Sort string

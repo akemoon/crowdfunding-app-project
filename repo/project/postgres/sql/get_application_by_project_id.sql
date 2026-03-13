@@ -1,18 +1,8 @@
 select
     pa.status_id,
     pa.reject_reason,
-    pa.created_at,
-    p.id,
-    p.user_id,
-    p.category_id,
-    p.name,
-    p.description,
-    p.currency_id,
-    p.goal_amount,
-    p.current_amount,
-    p.duration_days,
-    p.status_id,
-    p.boosted_until is not null and p.boosted_until > now() as is_boosted
+    pa.created_at
 from project_applications pa
 join projects p on p.id = pa.project_id
-where pa.project_id = $1;
+where pa.project_id = $1
+  and p.user_id = $2;

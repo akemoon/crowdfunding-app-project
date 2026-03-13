@@ -50,6 +50,7 @@ create table if not exists projects
     status_id      smallint    not null default 1 references project_statuses(id),
     boosted_until  timestamptz,
     finished_at    timestamptz,
+    -- TODO: cover_url text (MinIO presigned upload, minio-go)
 
     constraint projects_user_id_name_unique unique (user_id, name)
 );
@@ -62,15 +63,26 @@ create table if not exists project_application_statuses
 
 insert into project_application_statuses (id, name) values
 (1, 'pending'),
-(2, 'rejected'),
-(3, 'approved');
+(2, 'review'),
+(3, 'rejected'),
+(4, 'approved');
 
+-- project_applications is a separate entity (not just a status on projects) because:
+--   1. it carries manager-specific fields (assigned_to, reject_reason, timestamps)
+--   2. in the future it should become 1:many — one project may have multiple applications
+--      (e.g. re-submission after rejection), each with its own lifecycle and history
+-- TODO: migrate to 1:many by adding id bigserial PK and removing project_id as PK
+--       (keep project_id as FK + index); manager actions will then reference application id
 create table if not exists project_applications
 (
     project_id    uuid        primary key references projects(id),
     status_id     smallint    not null default 1 references project_application_statuses(id),
+    assigned_to   uuid,
     reject_reason text        not null default '',
-    created_at    timestamptz not null default now()
+    created_at    timestamptz not null default now(),
+    assigned_at   timestamptz,
+    processed_at  timestamptz,
+    updated_at    timestamptz not null default now()
 );
 
 create table if not exists finished_projects_outbox_statuses

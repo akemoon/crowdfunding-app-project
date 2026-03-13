@@ -15,11 +15,15 @@ type Repo interface {
 	ListPendingFinishedOutbox(ctx context.Context, limit int) ([]domain.Project, error)
 	MarkSentFinishedOutbox(ctx context.Context, projectID uuid.UUID) error
 	AddContribution(ctx context.Context, projectID uuid.UUID, amount int64) error
+
+	UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.UUID, req domain.CreateProjectReq) error
+
 	ApproveProject(ctx context.Context, id uuid.UUID) error
 	RejectProject(ctx context.Context, id uuid.UUID, reason string) error
-	UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.UUID, req domain.CreateProjectReq) error
-	GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID) (domain.Application, error)
+	GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (domain.Application, error)
 	GetPendingApplications(ctx context.Context) ([]domain.Application, error)
+	TakeApplication(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error
+	GetMyApplications(ctx context.Context, managerID uuid.UUID) ([]domain.Application, error)
 
 	BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error
 }

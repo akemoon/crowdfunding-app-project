@@ -45,6 +45,8 @@ func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.Proj
 		return domain.Project{}, fmt.Errorf("repo: %w", err)
 	}
 	if p.Status == domain.StatusReview {
+		// TODO: allow author and moderator to see review projects
+		// (requires passing caller identity and role into this method)
 		return domain.Project{}, domain.ErrProjectNotFound
 	}
 
@@ -129,8 +131,8 @@ func (s *Service) UpdateProject(ctx context.Context, userID uuid.UUID, id uuid.U
 	return nil
 }
 
-func (s *Service) GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID) (domain.Application, error) {
-	app, err := s.repo.GetApplicationByProjectID(ctx, projectID)
+func (s *Service) GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (domain.Application, error) {
+	app, err := s.repo.GetApplicationByProjectID(ctx, projectID, userID)
 	if err != nil {
 		return domain.Application{}, fmt.Errorf("repo: %w", err)
 	}
@@ -140,6 +142,24 @@ func (s *Service) GetApplicationByProjectID(ctx context.Context, projectID uuid.
 
 func (s *Service) GetPendingApplications(ctx context.Context) ([]domain.Application, error) {
 	apps, err := s.repo.GetPendingApplications(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("repo: %w", err)
+	}
+
+	return apps, nil
+}
+
+func (s *Service) TakeApplication(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error {
+	err := s.repo.TakeApplication(ctx, projectID, managerID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) GetMyApplications(ctx context.Context, managerID uuid.UUID) ([]domain.Application, error) {
+	apps, err := s.repo.GetMyApplications(ctx, managerID)
 	if err != nil {
 		return nil, fmt.Errorf("repo: %w", err)
 	}

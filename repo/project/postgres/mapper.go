@@ -93,11 +93,28 @@ func MapApplicationStatusFromDB(id int) (domain.ApplicationStatus, error) {
 	case 1:
 		return domain.ApplicationStatusPending, nil
 	case 2:
-		return domain.ApplicationStatusRejected, nil
+		return domain.ApplicationStatusInReview, nil
 	case 3:
+		return domain.ApplicationStatusRejected, nil
+	case 4:
 		return domain.ApplicationStatusApproved, nil
 	default:
 		return "", fmt.Errorf("%w: map application status from db err", domain.ErrInternal)
+	}
+}
+
+func MapApplicationStatusToDB(s domain.ApplicationStatus) (int, error) {
+	switch s {
+	case domain.ApplicationStatusPending:
+		return 1, nil
+	case domain.ApplicationStatusInReview:
+		return 2, nil
+	case domain.ApplicationStatusRejected:
+		return 3, nil
+	case domain.ApplicationStatusApproved:
+		return 4, nil
+	default:
+		return 0, fmt.Errorf("%w: map application status to db err", domain.ErrInternal)
 	}
 }
 
@@ -117,7 +134,9 @@ func MapApplicationFromDB(a ApplicationDB, p ProjectDB) (domain.Application, err
 		Status:       status,
 		RejectReason: a.RejectReason,
 		CreatedAt:    a.CreatedAt,
-		Project:      project,
+		AssignedAt:   a.AssignedAt,
+		ProcessedAt:  a.ProcessedAt,
+		Project:      &project,
 	}, nil
 }
 
@@ -137,8 +156,6 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		return domain.Project{}, err
 	}
 
-	startedAt := p.StartedAt
-
 	return domain.Project{
 		ID:            p.ID,
 		UserID:        p.UserID,
@@ -148,7 +165,7 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		Currency:      currency,
 		GoalAmount:    p.GoalAmount,
 		CurrentAmount: p.CurrentAmount,
-		StartedAt:     &startedAt,
+		StartedAt:     p.StartedAt,
 		DurationDays:  p.DurationDays,
 		Status:        status,
 		IsBoosted:     p.IsBoosted,

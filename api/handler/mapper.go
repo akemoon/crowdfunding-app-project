@@ -95,6 +95,9 @@ var (
 	RejectProjectMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotOnReview,
 	}
+	TakeApplicationMapRules = []httplib.ErrMapRule{
+		MapRuleApplicationNotFound,
+	}
 	GetApplicationByProjectIDMapRules = []httplib.ErrMapRule{
 		MapRuleApplicationNotFound,
 	}

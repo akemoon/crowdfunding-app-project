@@ -17,5 +17,6 @@ select
     p.boosted_until is not null and p.boosted_until > now() as is_boosted
 from project_applications pa
 join projects p on p.id = pa.project_id
-where pa.status_id = 1
-order by pa.created_at asc;
+where pa.assigned_to = $1
+  and pa.status_id = 2
+order by pa.assigned_at asc;

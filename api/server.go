@@ -28,8 +28,14 @@ func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("POST /projects", handler.CreateProject(svc))
 	s.r.HandleFunc("GET /projects", handler.GetProjects(svc))
 	s.r.HandleFunc("GET /projects/{id}", handler.GetProjectByID(svc))
+	s.r.HandleFunc("GET /projects/{id}/applications", handler.GetApplicationByProjectID(svc))
 	s.r.HandleFunc("POST /projects/{id}/boost", handler.BoostProject(svc))
-	// TODO: add approve, reject, apps
+
+	s.r.HandleFunc("GET /projects/applications", handler.GetPendingApplications(svc))
+	s.r.HandleFunc("GET /projects/applications/moderator", handler.GetMyApplications(svc))
+	s.r.HandleFunc("POST /projects/applications/{id}/take", handler.TakeApplication(svc))
+	s.r.HandleFunc("POST /projects/applications/{id}/approve", handler.ApproveProject(svc))
+	s.r.HandleFunc("POST /projects/applications/{id}/reject", handler.RejectProject(svc))
 }
 
 func (s *Server) AddSwaggerUI() {
