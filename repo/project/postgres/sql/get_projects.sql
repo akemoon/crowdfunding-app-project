@@ -12,17 +12,20 @@ with scored as (
         duration_days,
         boosted_until is not null and boosted_until > now() as is_boosted,
         (
-            -(current_date - (
-                case
-                    when status_id = 2 then coalesce(finished_at, started_at + duration_days * interval '1 day')::date
-                    else started_at::date
-                end
-            ))
+            -- freshness: -0.5 per day since start
+            -0.5 * (current_date - started_at::date)
+            -- popularity: progress toward goal, capped at 100%
+            + least(current_amount::float / nullif(goal_amount, 0), 1.0) * 20
+            -- urgency: small bonus for projects close to deadline
             + case
-                when status_id = 1
-                 and boosted_until is not null
-                 and boosted_until > now()
-                then 10  -- boost score constant
+                when (started_at + duration_days * interval '1 day')::date - current_date < 7
+                then 5
+                else 0
+              end
+            -- boost: always applied
+            + case
+                when boosted_until is not null and boosted_until > now()
+                then 10
                 else 0
               end
         ) as score,
@@ -50,7 +53,7 @@ from scored
 order by
     case when $6 = 'default' then score end desc nulls last,
     case when $6 = 'date' then
-        case when status_id = 2 then finished_at else started_at end
+        coalesce(finished_at, started_at)
     end desc nulls last,
     case when $6 = 'date' then score end desc nulls last,
     id desc
