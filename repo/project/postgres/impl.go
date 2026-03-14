@@ -159,6 +159,52 @@ func (r *ProjectRepo) GetProjects(ctx context.Context, req domain.GetProjectsReq
 	return out, nil
 }
 
+//go:embed sql/get_projects_by_user_id.sql
+var getProjectsByUserIDSQL string
+
+func (r *ProjectRepo) GetProjectsByUserID(ctx context.Context, authorID uuid.UUID, isOwner bool) ([]domain.Project, error) {
+	rows, err := r.db.QueryContext(ctx, getProjectsByUserIDSQL, authorID, isOwner)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []domain.Project
+
+	for rows.Next() {
+		var pDB ProjectDB
+		if err := rows.Scan(
+			&pDB.ID,
+			&pDB.UserID,
+			&pDB.CategoryID,
+			&pDB.Name,
+			&pDB.Description,
+			&pDB.CurrencyID,
+			&pDB.GoalAmount,
+			&pDB.CurrentAmount,
+			&pDB.StartedAt,
+			&pDB.DurationDays,
+			&pDB.StatusID,
+			&pDB.IsBoosted,
+		); err != nil {
+			return nil, err
+		}
+
+		p, err := MapProjectFromDB(pDB)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 //go:embed sql/finish_projects.sql
 var finishProjectsSQL string
 

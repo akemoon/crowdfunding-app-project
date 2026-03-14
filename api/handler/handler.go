@@ -97,6 +97,46 @@ func GetProjects(svc *project.Service) http.HandlerFunc {
 	}
 }
 
+func GetProjectsByUserID(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid user id", http.StatusBadRequest)
+			return
+		}
+
+		projects, err := svc.GetProjectsByUserID(r.Context(), userID, false)
+		if err != nil {
+			log.Printf("GetProjectsByUserID: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, projects)
+	}
+}
+
+func GetMyProjects(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		projects, err := svc.GetProjectsByUserID(r.Context(), userID, true)
+		if err != nil {
+			log.Printf("GetMyProjects: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, nil)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, projects)
+	}
+}
+
 func GetProjectByID(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := uuid.Parse(r.PathValue("id"))
@@ -105,7 +145,13 @@ func GetProjectByID(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		p, err := svc.GetProjectByID(r.Context(), id)
+		var callerID *uuid.UUID
+		parsedID, parseErr := httplib.ParseUUIDHeader(r, userIDHeader)
+		if parseErr == nil {
+			callerID = &parsedID
+		}
+
+		p, err := svc.GetProjectByID(r.Context(), id, callerID)
 		if err != nil {
 			log.Printf("GetProjectByID: %v", err)
 			status, errResp := httplib.MapErrToHTTP(err, GetProjectByIDMapRules)

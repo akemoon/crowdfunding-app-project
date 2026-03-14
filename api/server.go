@@ -27,15 +27,18 @@ func NewServer() *Server {
 func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("POST /projects", handler.CreateProject(svc))
 	s.r.HandleFunc("GET /projects", handler.GetProjects(svc))
+	s.r.HandleFunc("GET /projects/user", handler.GetMyProjects(svc))
+	s.r.HandleFunc("GET /projects/user/{id}", handler.GetProjectsByUserID(svc))
 	s.r.HandleFunc("GET /projects/{id}", handler.GetProjectByID(svc))
-	s.r.HandleFunc("GET /projects/{id}/applications", handler.GetApplicationByProjectID(svc))
 	s.r.HandleFunc("POST /projects/{id}/boost", handler.BoostProject(svc))
 
-	s.r.HandleFunc("GET /projects/applications", handler.GetPendingApplications(svc))
-	s.r.HandleFunc("GET /projects/applications/moderator", handler.GetMyApplications(svc))
-	s.r.HandleFunc("POST /projects/applications/{id}/take", handler.TakeApplication(svc))
-	s.r.HandleFunc("POST /projects/applications/{id}/approve", handler.ApproveProject(svc))
-	s.r.HandleFunc("POST /projects/applications/{id}/reject", handler.RejectProject(svc))
+	// TODO: move application handlers to a separate registry (applications are a distinct resource)
+	s.r.HandleFunc("GET /applications", handler.GetPendingApplications(svc))
+	s.r.HandleFunc("GET /applications/moderator", handler.GetMyApplications(svc))
+	s.r.HandleFunc("GET /applications/project/{id}", handler.GetApplicationByProjectID(svc))
+	s.r.HandleFunc("POST /applications/{id}/take", handler.TakeApplication(svc))
+	s.r.HandleFunc("POST /applications/{id}/approve", handler.ApproveProject(svc))
+	s.r.HandleFunc("POST /applications/{id}/reject", handler.RejectProject(svc))
 }
 
 func (s *Server) AddSwaggerUI() {

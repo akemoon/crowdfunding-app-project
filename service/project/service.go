@@ -39,15 +39,15 @@ func (s *Service) CreateProject(ctx context.Context, userID uuid.UUID, req domai
 	return nil
 }
 
-func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.Project, error) {
+func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID, callerID *uuid.UUID) (domain.Project, error) {
 	p, err := s.repo.GetProjectByID(ctx, id)
 	if err != nil {
 		return domain.Project{}, fmt.Errorf("repo: %w", err)
 	}
 	if p.Status == domain.StatusReview {
-		// TODO: allow author and moderator to see review projects
-		// (requires passing caller identity and role into this method)
-		return domain.Project{}, domain.ErrProjectNotFound
+		if callerID == nil || *callerID != p.UserID {
+			return domain.Project{}, domain.ErrProjectNotFound
+		}
 	}
 
 	return p, nil
@@ -165,6 +165,15 @@ func (s *Service) GetMyApplications(ctx context.Context, managerID uuid.UUID) ([
 	}
 
 	return apps, nil
+}
+
+func (s *Service) GetProjectsByUserID(ctx context.Context, authorID uuid.UUID, isOwner bool) ([]domain.Project, error) {
+	projects, err := s.repo.GetProjectsByUserID(ctx, authorID, isOwner)
+	if err != nil {
+		return nil, fmt.Errorf("repo: %w", err)
+	}
+
+	return projects, nil
 }
 
 func (s *Service) BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, promoCode string) error {
