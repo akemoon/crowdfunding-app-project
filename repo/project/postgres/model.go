@@ -19,6 +19,7 @@ type ProjectDB struct {
 	DurationDays  int
 	StatusID      int
 	IsBoosted     bool
+	BoostedUntil  *time.Time
 }
 
 type ApplicationDB struct {

@@ -169,5 +169,6 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		DurationDays:  p.DurationDays,
 		Status:        status,
 		IsBoosted:     p.IsBoosted,
+		BoostedUntil:  p.BoostedUntil,
 	}, nil
 }

@@ -44,7 +44,8 @@ type Project struct {
 	StartedAt     *time.Time `json:"startedAt,omitempty"`
 	DurationDays  int       `json:"durationDays"`
 	Status        Status    `json:"status"`
-	IsBoosted     bool      `json:"isBoosted"`
+	IsBoosted     bool       `json:"isBoosted"`
+	BoostedUntil  *time.Time `json:"boostedUntil,omitempty"`
 }
 
 type Status string

@@ -44,10 +44,13 @@ func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID, callerID *uu
 	if err != nil {
 		return domain.Project{}, fmt.Errorf("repo: %w", err)
 	}
-	if p.Status == domain.StatusReview {
-		if callerID == nil || *callerID != p.UserID {
+	if callerID == nil || *callerID != p.UserID {
+		if p.Status == domain.StatusReview {
 			return domain.Project{}, domain.ErrProjectNotFound
 		}
+
+		// Hide date
+		p.BoostedUntil = nil
 	}
 
 	return p, nil

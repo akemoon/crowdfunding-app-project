@@ -8,7 +8,6 @@ import (
 	"github.com/akemoon/golib/myhttp"
 	"github.com/akemoon/golib/myhttp/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -39,12 +38,6 @@ func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("POST /applications/{id}/take", handler.TakeApplication(svc))
 	s.r.HandleFunc("POST /applications/{id}/approve", handler.ApproveProject(svc))
 	s.r.HandleFunc("POST /applications/{id}/reject", handler.RejectProject(svc))
-}
-
-func (s *Server) AddSwaggerUI() {
-	s.r.Handle("/swagger/", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
 }
 
 func (s *Server) AddMetrics() {

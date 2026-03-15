@@ -143,7 +143,6 @@ func (a *App) InitServices() error {
 func (a *App) InitServer() {
 	server := api.NewServer()
 	server.AddProjectHandlers(a.projectSvc)
-	server.AddSwaggerUI()
 	server.AddMetrics()
 	a.server = server
 }

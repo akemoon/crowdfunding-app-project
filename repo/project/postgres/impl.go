@@ -76,6 +76,7 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 		&pDB.DurationDays,
 		&pDB.StatusID,
 		&pDB.IsBoosted,
+		&pDB.BoostedUntil,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
