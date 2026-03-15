@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/akemoon/crowdfunding-app-project/metrics"
 	projectPublisher "github.com/akemoon/crowdfunding-app-project/publisher/project"
 	projectRepo "github.com/akemoon/crowdfunding-app-project/repo/project"
 )
@@ -19,9 +20,10 @@ type PublishWorker struct {
 	publisher *projectPublisher.Publisher
 	interval  time.Duration
 	batch     int
+	metrics   *metrics.PublishWorkerMetrics
 }
 
-func NewPublishWorker(repo projectRepo.Repo, publisher *projectPublisher.Publisher, interval time.Duration, batch int) *PublishWorker {
+func NewPublishWorker(repo projectRepo.Repo, publisher *projectPublisher.Publisher, interval time.Duration, batch int, m *metrics.PublishWorkerMetrics) *PublishWorker {
 	if interval <= 0 {
 		interval = defaultPublishInterval
 	}
@@ -35,6 +37,7 @@ func NewPublishWorker(repo projectRepo.Repo, publisher *projectPublisher.Publish
 		publisher: publisher,
 		interval:  interval,
 		batch:     batch,
+		metrics:   m,
 	}
 }
 
@@ -55,6 +58,8 @@ func (w *PublishWorker) Run(ctx context.Context) {
 }
 
 func (w *PublishWorker) runOnce(ctx context.Context) {
+	w.metrics.LastRunUnix.Set(float64(time.Now().Unix()))
+
 	// TODO: add locked_until
 	projects, err := w.repo.ListPendingFinishedOutbox(ctx, defaultPublishBatch)
 	if err != nil {

@@ -119,11 +119,14 @@ func (a *App) InitServices() error {
 	}
 	a.publisher = publisher
 
+	publishMetrics := metrics.NewPublishWorkerMetrics(prometheus.DefaultRegisterer)
+
 	a.publishWorker = projectSvc.NewPublishWorker(
 		repo,
 		publisher,
 		defaultPublishInterval,
 		defaultPublishBatch,
+		publishMetrics,
 	)
 
 	promoClient := resty.NewPromoClient(a.config.PromoBaseURL)

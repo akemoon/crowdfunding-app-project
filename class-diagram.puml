@@ -1,0 +1,310 @@
+@startuml class
+!theme plain
+skinparam linetype curved
+skinparam roundcorner 10
+skinparam shadowing false
+skinparam class {
+  BackgroundColor white
+  BorderColor black
+  ArrowColor black
+}
+skinparam package {
+  BackgroundColor white
+  BorderColor black
+}
+
+package "main" {
+  class App {
+    pg
+    kafka
+    server
+    projectSvc
+    finishWorker
+    publishWorker
+    paymentConsumer
+    --
+    Init()
+    Run()
+  }
+}
+
+package "domain" {
+  class Project {
+    ID
+    UserID
+    Category
+    Name
+    Description
+    Currency
+    GoalAmount
+    CurrentAmount
+    DurationDays
+    StartedAt
+    BoostedUntil
+    Status
+    IsBoosted
+  }
+
+  class Application {
+    Status
+    RejectReason
+    CreatedAt
+    AssignedAt
+    ProcessedAt
+    Project
+  }
+
+  class CreateProjectReq {
+    Category
+    Name
+    Description
+    Currency
+    GoalAmount
+    DurationDays
+  }
+
+  class GetProjectsReq {
+    Status
+    Sort
+    Category
+    Search
+    Limit
+    Offset
+  }
+
+  class GetProjectsResp {
+    Projects
+    Total
+  }
+
+  class ApplicationStatus {
+    Pending
+    InReview
+    Rejected
+    Approved
+  }
+
+  class Status {
+    Review
+    Active
+    Finished
+  }
+}
+
+package "service.project" {
+  class Service {
+    repo
+    promo
+    --
+    CreateProject()
+    GetProjectByID()
+    GetProjects()
+    GetProjectsByUserID()
+    UpdateProject()
+    AddContribution()
+    ApproveProject()
+    RejectProject()
+    TakeApplication()
+    GetApplicationByProjectID()
+    GetPendingApplications()
+    GetMyApplications()
+    BoostProject()
+  }
+
+  class FinishWorker {
+    repo
+    interval
+    metrics
+    --
+    Run()
+  }
+
+  class PublishWorker {
+    repo
+    publisher
+    interval
+    batch
+    --
+    Run()
+  }
+}
+
+package "repo.project" {
+  interface Repo {
+    CreateProject()
+    GetProjectByID()
+    GetProjects()
+    GetProjectsByUserID()
+    UpdateProject()
+    FinishProjects()
+    AddContribution()
+    ApproveProject()
+    RejectProject()
+    TakeApplication()
+    GetApplicationByProjectID()
+    GetPendingApplications()
+    GetMyApplications()
+    BoostProject()
+    ListPendingFinishedOutbox()
+    MarkSentFinishedOutbox()
+  }
+}
+
+package "repo.project.postgres" {
+  class ProjectRepo {
+    db
+    --
+    CreateProject()
+    GetProjectByID()
+    GetProjects()
+    GetProjectsByUserID()
+    UpdateProject()
+    FinishProjects()
+    AddContribution()
+    ApproveProject()
+    RejectProject()
+    TakeApplication()
+    GetApplicationByProjectID()
+    GetPendingApplications()
+    GetMyApplications()
+    BoostProject()
+    ListPendingFinishedOutbox()
+    MarkSentFinishedOutbox()
+  }
+
+  class ProjectDB {
+    ID
+    UserID
+    CategoryID
+    Name
+    Description
+    CurrencyID
+    GoalAmount
+    CurrentAmount
+    StartedAt
+    DurationDays
+    StatusID
+    IsBoosted
+    BoostedUntil
+  }
+
+  class ApplicationDB {
+    StatusID
+    AssignedTo
+    RejectReason
+    CreatedAt
+    AssignedAt
+    ProcessedAt
+  }
+}
+
+package "publisher.project" {
+  class Publisher {
+    writer
+    topic
+    --
+    Publish()
+    Close()
+  }
+
+  class Event {
+    Type
+    Project
+  }
+}
+
+package "client.promocode" {
+  interface Client {
+    UsePromoCode()
+  }
+
+  class RestyClient {
+    client
+    baseURL
+    --
+    UsePromoCode()
+  }
+}
+
+package "cluster.payment" {
+  class PaymentConsumer {
+    reader
+    svc
+    --
+    Run()
+    Close()
+  }
+
+  class ContributionEvent {
+    ProjectID
+    Amount
+  }
+}
+
+package "api" {
+  class Server {
+    srv
+    router
+    --
+    AddProjectHandlers()
+    ListenAndServe()
+  }
+}
+
+package "api.handler" {
+  class RejectProjectReq {
+    Reason
+  }
+
+  class BoostProjectReq {
+    PromoCode
+  }
+}
+
+package "metrics" {
+  class FinishWorkerMetrics {
+    finishedTotal
+    --
+    IncFinished()
+  }
+}
+
+' Relationships - Application
+App *-- Service
+App *-- FinishWorker
+App *-- PublishWorker
+App *-- PaymentConsumer
+App *-- Server
+
+' Relationships - Service
+Service ..|> Repo
+Service *-- Client
+FinishWorker ..> Repo
+PublishWorker ..> Repo
+PublishWorker ..> Publisher
+
+' Relationships - Repository
+ProjectRepo ..|> Repo
+
+' Relationships - Domain
+Application *-- Project
+Application *-- ApplicationStatus
+Project *-- Status
+GetProjectsResp *-- Project
+
+' Relationships - API
+Server ..> Service
+Server ..> RejectProjectReq
+Server ..> BoostProjectReq
+
+' Relationships - Client
+RestyClient ..|> Client
+
+' Relationships - Workers
+FinishWorker *-- FinishWorkerMetrics
+
+' Relationships - Cluster
+PaymentConsumer ..> Service
+PaymentConsumer ..> ContributionEvent
+
+@enduml

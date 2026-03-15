@@ -24,7 +24,7 @@ func NewService(r project.Repo, promo promocode.Client) *Service {
 }
 
 func (s *Service) CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) error {
-	// TODO: check author account
+	// NOTE: check author account
 
 	err := validateCreateProjectReq(req)
 	if err != nil {
