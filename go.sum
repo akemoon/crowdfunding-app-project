@@ -1,5 +1,5 @@
-github.com/akemoon/golib v0.0.0-20260131110518-3db8f1682b21 h1:ulnR8qMY4jCKeKmBwfbcBZ9nHIjVAB//wTT0rG+Io9E=
-github.com/akemoon/golib v0.0.0-20260131110518-3db8f1682b21/go.mod h1:gH5yVCQY0eQf4qx9aZpLrsitV/2yewdJKaqU8Ac1KLE=
+github.com/akemoon/golib v0.0.0-20260317144338-3df85e46f369 h1:5icWTheBabt9j5Ysw+Cd+fG4/w0NC6xS9Isni4yEGf0=
+github.com/akemoon/golib v0.0.0-20260317144338-3df85e46f369/go.mod h1:vAMDxWQetIc/7McLgSJ5xgTAqWHqteh04HbMz4aUMKc=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

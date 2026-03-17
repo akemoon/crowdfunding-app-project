@@ -1,6 +1,6 @@
 @startuml class
 !theme plain
-skinparam linetype curved
+skinparam linetype ortho
 skinparam roundcorner 10
 skinparam shadowing false
 skinparam class {
@@ -16,12 +16,12 @@ skinparam package {
 package "main" {
   class App {
     pg
-    kafka
-    server
-    projectSvc
+    publisher
     finishWorker
     publishWorker
-    paymentConsumer
+    contributionConsumer
+    projectSvc
+    server
     --
     Init()
     Run()
@@ -76,19 +76,6 @@ package "domain" {
     Projects
     Total
   }
-
-  class ApplicationStatus {
-    Pending
-    InReview
-    Rejected
-    Approved
-  }
-
-  class Status {
-    Review
-    Active
-    Finished
-  }
 }
 
 package "service.project" {
@@ -124,6 +111,7 @@ package "service.project" {
     publisher
     interval
     batch
+    metrics
     --
     Run()
   }
@@ -207,7 +195,7 @@ package "publisher.project" {
     Close()
   }
 
-  class Event {
+  class "Event" as ProjectEvent {
     Type
     Project
   }
@@ -217,7 +205,9 @@ package "client.promocode" {
   interface Client {
     UsePromoCode()
   }
+}
 
+package "client.promocode.resty" {
   class RestyClient {
     client
     baseURL
@@ -226,8 +216,8 @@ package "client.promocode" {
   }
 }
 
-package "cluster.payment" {
-  class PaymentConsumer {
+package "cluster.contribution" {
+  class Consumer {
     reader
     svc
     --
@@ -235,7 +225,9 @@ package "cluster.payment" {
     Close()
   }
 
-  class ContributionEvent {
+  class "Event" as ContributionEvent {
+    EventID
+    Type
     ProjectID
     Amount
   }
@@ -247,64 +239,50 @@ package "api" {
     router
     --
     AddProjectHandlers()
+    AddMetrics()
     ListenAndServe()
-  }
-}
-
-package "api.handler" {
-  class RejectProjectReq {
-    Reason
-  }
-
-  class BoostProjectReq {
-    PromoCode
   }
 }
 
 package "metrics" {
   class FinishWorkerMetrics {
-    finishedTotal
+    LastRunUnix
     --
     IncFinished()
   }
+
+  class PublishWorkerMetrics {
+    LastRunUnix
+  }
 }
 
-' Relationships - Application
+' Relationships
 App *-- Service
 App *-- FinishWorker
 App *-- PublishWorker
-App *-- PaymentConsumer
+App *-- Consumer
 App *-- Server
+App *-- Publisher
 
-' Relationships - Service
-Service ..|> Repo
+Service *-- Repo
 Service *-- Client
 FinishWorker ..> Repo
+FinishWorker *-- FinishWorkerMetrics
 PublishWorker ..> Repo
-PublishWorker ..> Publisher
+PublishWorker *-- Publisher
+PublishWorker *-- PublishWorkerMetrics
 
-' Relationships - Repository
 ProjectRepo ..|> Repo
 
-' Relationships - Domain
-Application *-- Project
-Application *-- ApplicationStatus
-Project *-- Status
-GetProjectsResp *-- Project
-
-' Relationships - API
-Server ..> Service
-Server ..> RejectProjectReq
-Server ..> BoostProjectReq
-
-' Relationships - Client
 RestyClient ..|> Client
 
-' Relationships - Workers
-FinishWorker *-- FinishWorkerMetrics
+Application *-- Project
+GetProjectsResp *-- Project
+ProjectEvent *-- Project
 
-' Relationships - Cluster
-PaymentConsumer ..> Service
-PaymentConsumer ..> ContributionEvent
+Consumer ..> Service
+Consumer ..> ContributionEvent
+
+Server ..> Service
 
 @enduml

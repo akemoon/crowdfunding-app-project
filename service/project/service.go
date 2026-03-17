@@ -6,7 +6,7 @@ import (
 
 	"github.com/akemoon/crowdfunding-app-project/client/promocode"
 	"github.com/akemoon/crowdfunding-app-project/domain"
-	"github.com/akemoon/crowdfunding-app-project/golib/validation"
+	"github.com/akemoon/golib/validation"
 	"github.com/akemoon/crowdfunding-app-project/repo/project"
 	"github.com/google/uuid"
 )

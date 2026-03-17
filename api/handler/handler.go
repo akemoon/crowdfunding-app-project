@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/akemoon/crowdfunding-app-project/domain"
-	"github.com/akemoon/crowdfunding-app-project/golib/httplib"
+	"github.com/akemoon/golib/httplib"
 	"github.com/akemoon/crowdfunding-app-project/service/project"
 	"github.com/google/uuid"
 )

@@ -14,7 +14,7 @@ import (
 	"github.com/akemoon/crowdfunding-app-project/publisher/project"
 	projectRepo "github.com/akemoon/crowdfunding-app-project/repo/project/postgres"
 	projectSvc "github.com/akemoon/crowdfunding-app-project/service/project"
-	pgLib "github.com/akemoon/golib/postgres"
+	pgLib "github.com/akemoon/golib/pglib"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

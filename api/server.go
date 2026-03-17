@@ -5,19 +5,19 @@ import (
 
 	"github.com/akemoon/crowdfunding-app-project/api/handler"
 	"github.com/akemoon/crowdfunding-app-project/service/project"
-	"github.com/akemoon/golib/myhttp"
-	"github.com/akemoon/golib/myhttp/middleware"
+	"github.com/akemoon/golib/httplib"
+	"github.com/akemoon/golib/httplib/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
 	s *http.Server
-	r *myhttp.Router
+	r *httplib.Router
 }
 
 func NewServer() *Server {
 	return &Server{
-		r: myhttp.NewRouter().Use(
+		r: httplib.NewRouter().Use(
 			middleware.BaseMetrics(),
 		),
 	}

@@ -8,7 +8,7 @@ import (
 	_ "embed"
 
 	"github.com/akemoon/crowdfunding-app-project/domain"
-	"github.com/akemoon/crowdfunding-app-project/golib/pglib"
+	"github.com/akemoon/golib/pglib"
 	"github.com/google/uuid"
 )
 

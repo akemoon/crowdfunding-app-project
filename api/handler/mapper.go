@@ -5,7 +5,7 @@ import (
 
 	"github.com/akemoon/crowdfunding-app-project/client/promocode"
 	"github.com/akemoon/crowdfunding-app-project/domain"
-	"github.com/akemoon/crowdfunding-app-project/golib/httplib"
+	"github.com/akemoon/golib/httplib"
 )
 
 var (
