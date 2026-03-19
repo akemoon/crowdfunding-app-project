@@ -56,6 +56,15 @@ func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID, callerID *uu
 	return p, nil
 }
 
+// GetProjectByIDRaw returns the project without any visibility checks (for GraphQL).
+func (s *Service) GetProjectByIDRaw(ctx context.Context, id uuid.UUID) (domain.Project, error) {
+	p, err := s.repo.GetProjectByID(ctx, id)
+	if err != nil {
+		return domain.Project{}, fmt.Errorf("repo: %w", err)
+	}
+	return p, nil
+}
+
 func (s *Service) GetProjects(ctx context.Context, req domain.GetProjectsReq) (domain.GetProjectsResp, error) {
 	err := domain.ValidateStatus(req.Status)
 	if err != nil {
@@ -154,6 +163,16 @@ func (s *Service) GetPendingApplications(ctx context.Context) ([]domain.Applicat
 
 func (s *Service) TakeApplication(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error {
 	err := s.repo.TakeApplication(ctx, projectID, managerID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
+}
+
+// TakeApplicationForce assigns the application regardless of current status (for GraphQL).
+func (s *Service) TakeApplicationForce(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error {
+	err := s.repo.TakeApplicationForce(ctx, projectID, managerID)
 	if err != nil {
 		return fmt.Errorf("repo: %w", err)
 	}

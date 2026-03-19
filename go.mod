@@ -3,18 +3,25 @@ module github.com/akemoon/crowdfunding-app-project
 go 1.25.3
 
 require (
+	github.com/99designs/gqlgen v0.17.88
 	github.com/akemoon/golib v0.0.0-20260317144338-3df85e46f369
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/google/uuid v1.6.0
 	github.com/segmentio/kafka-go v0.4.50
+	github.com/vektah/gqlparser/v2 v2.5.32
 )
 
 require (
+	github.com/agnivade/levenshtein v1.2.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v5 v5.8.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pressly/goose/v3 v3.26.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
+	github.com/sosodev/duration v1.4.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
 )
 
 require (
@@ -33,7 +40,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

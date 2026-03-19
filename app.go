@@ -146,6 +146,7 @@ func (a *App) InitServices() error {
 func (a *App) InitServer() {
 	server := api.NewServer()
 	server.AddProjectHandlers(a.projectSvc)
+	server.AddGraphQL(a.projectSvc)
 	server.AddMetrics()
 	a.server = server
 }

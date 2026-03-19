@@ -472,6 +472,14 @@ func (r *ProjectRepo) TakeApplication(ctx context.Context, projectID uuid.UUID, 
 	return nil
 }
 
+//go:embed sql/take_application_force.sql
+var takeApplicationForceSQL string
+
+func (r *ProjectRepo) TakeApplicationForce(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error {
+	_, err := r.db.ExecContext(ctx, takeApplicationForceSQL, projectID, managerID)
+	return err
+}
+
 //go:embed sql/get_my_applications.sql
 var getMyApplicationsSQL string
 

@@ -3,7 +3,10 @@ package api
 import (
 	"net/http"
 
+	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/akemoon/crowdfunding-app-project/api/handler"
+	"github.com/akemoon/crowdfunding-app-project/graph"
 	"github.com/akemoon/crowdfunding-app-project/service/project"
 	"github.com/akemoon/golib/httplib"
 	"github.com/akemoon/golib/httplib/middleware"
@@ -38,6 +41,14 @@ func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("POST /applications/{id}/take", handler.TakeApplication(svc))
 	s.r.HandleFunc("POST /applications/{id}/approve", handler.ApproveProject(svc))
 	s.r.HandleFunc("POST /applications/{id}/reject", handler.RejectProject(svc))
+}
+
+func (s *Server) AddGraphQL(svc *project.Service) {
+	srv := gqlhandler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+		Resolvers: graph.NewResolver(svc),
+	}))
+	s.r.Handle("/graphql", srv)
+	s.r.Handle("/playground", playground.Handler("GraphQL", "/graphql"))
 }
 
 func (s *Server) AddMetrics() {

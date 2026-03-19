@@ -24,6 +24,7 @@ type Repo interface {
 	GetApplicationByProjectID(ctx context.Context, projectID uuid.UUID, userID uuid.UUID) (domain.Application, error)
 	GetPendingApplications(ctx context.Context) ([]domain.Application, error)
 	TakeApplication(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error
+	TakeApplicationForce(ctx context.Context, projectID uuid.UUID, managerID uuid.UUID) error
 	GetMyApplications(ctx context.Context, managerID uuid.UUID) ([]domain.Application, error)
 
 	BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error
