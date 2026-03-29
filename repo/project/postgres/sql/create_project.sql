@@ -1,14 +1,3 @@
-with created as (
-    insert into projects (
-        user_id,
-        category_id,
-        name,
-        description,
-        currency_id,
-        goal_amount,
-        duration_days
-    ) values ($1, $2, $3, $4, $5, $6, $7)
-    returning id
-)
-insert into project_applications (project_id)
-select id from created;
+insert into projects (user_id, category_id, name, description, currency_id, goal_amount, duration_days)
+values ($1, $2, $3, $4, $5, $6, $7)
+returning id, user_id, category_id, name, description, currency_id, goal_amount, started_at, duration_days, status_id;

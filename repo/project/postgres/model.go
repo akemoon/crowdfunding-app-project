@@ -7,26 +7,21 @@ import (
 )
 
 type ProjectDB struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	CategoryID    int
-	Name          string
-	Description   string
-	CurrencyID    int
-	GoalAmount    int64
-	CurrentAmount int64
-	StartedAt     *time.Time
-	DurationDays  int
-	StatusID      int
-	IsBoosted     bool
-	BoostedUntil  *time.Time
+	ID           uuid.UUID
+	UserID       uuid.UUID
+	CategoryID   int
+	Name         string
+	Description  string
+	CurrencyID   int
+	GoalAmount   int64
+	StartedAt    *time.Time
+	DurationDays int
+	StatusID     int
 }
 
-type ApplicationDB struct {
-	StatusID     int
-	AssignedTo   *uuid.UUID
-	RejectReason string
-	CreatedAt    time.Time
-	AssignedAt   *time.Time
-	ProcessedAt  *time.Time
+type ContributionDB struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	ProjectID uuid.UUID
+	Amount    int64
 }

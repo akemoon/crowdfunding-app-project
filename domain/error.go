@@ -15,21 +15,9 @@ var (
 
 	ErrUnknownCurrency = errors.New("unknown currency")
 
-	ErrInvalidDonationAmount = errors.New("invalid donation amount")
-
 	ErrProjectNotFound = errors.New("project not found")
 
 	ErrProjectExists = errors.New("project name already exists")
 
-	ErrUnknownConflict = errors.New("unknown conflict")
-
 	ErrInternal = errors.New("internal error")
-
-	ErrUnknownStatus = errors.New("unknown status")
-
-	ErrUnknownSort = errors.New("unknown sort")
-
-	ErrProjectNotOnReview       = errors.New("project is not on review")
-	ErrApplicationNotFound      = errors.New("application not found")
-	ErrApplicationAlreadyTaken  = errors.New("application is already taken")
 )

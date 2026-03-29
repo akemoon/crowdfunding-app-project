@@ -13,6 +13,5 @@ FROM ubuntu:24.04
 WORKDIR /app
 
 COPY --from=build /build/app .
-COPY --from=build /build/repo/migrations ./migrations
 
 CMD ["./app"]

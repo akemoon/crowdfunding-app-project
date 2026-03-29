@@ -3,7 +3,6 @@ package handler
 import (
 	"net/http"
 
-	"github.com/akemoon/crowdfunding-app-project/client/promocode"
 	"github.com/akemoon/crowdfunding-app-project/domain"
 	"github.com/akemoon/golib/httplib"
 )
@@ -21,60 +20,6 @@ var (
 		Code:    "project_not_found",
 		Message: domain.ErrProjectNotFound.Error(),
 	}
-	MapRuleProjectNotOnReview = httplib.ErrMapRule{
-		Err:     domain.ErrProjectNotOnReview,
-		Status:  http.StatusConflict,
-		Code:    "project_not_on_review",
-		Message: domain.ErrProjectNotOnReview.Error(),
-	}
-	MapRuleApplicationNotFound = httplib.ErrMapRule{
-		Err:     domain.ErrApplicationNotFound,
-		Status:  http.StatusNotFound,
-		Code:    "application_not_found",
-		Message: domain.ErrApplicationNotFound.Error(),
-	}
-)
-
-var (
-	MapRuleUnknownStatus = httplib.ErrMapRule{
-		Err:     domain.ErrUnknownStatus,
-		Status:  http.StatusBadRequest,
-		Code:    "unknown_status",
-		Message: domain.ErrUnknownStatus.Error(),
-	}
-	MapRuleUnknownCategory = httplib.ErrMapRule{
-		Err:     domain.ErrUnknownCategory,
-		Status:  http.StatusBadRequest,
-		Code:    "unknown_category",
-		Message: domain.ErrUnknownCategory.Error(),
-	}
-	MapRuleUnknownSort = httplib.ErrMapRule{
-		Err:     domain.ErrUnknownSort,
-		Status:  http.StatusBadRequest,
-		Code:    "unknown_sort",
-		Message: domain.ErrUnknownSort.Error(),
-	}
-)
-
-var (
-	MapRulePromoCodeNotFound = httplib.ErrMapRule{
-		Err:     promocode.ErrPromoCodeNotFound,
-		Status:  http.StatusNotFound,
-		Code:    "promo_code_not_found",
-		Message: promocode.ErrPromoCodeNotFound.Error(),
-	}
-	MapRulePromoCodeUsed = httplib.ErrMapRule{
-		Err:     promocode.ErrPromoCodeUsed,
-		Status:  http.StatusConflict,
-		Code:    "promo_code_already_used",
-		Message: promocode.ErrPromoCodeUsed.Error(),
-	}
-	MapRulePromoCodeAccessDenied = httplib.ErrMapRule{
-		Err:     promocode.ErrPromoCodeForbidden,
-		Status:  http.StatusForbidden,
-		Code:    "promo_code_access_denied",
-		Message: promocode.ErrPromoCodeForbidden.Error(),
-	}
 )
 
 var (
@@ -84,31 +29,7 @@ var (
 	GetProjectByIDMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
 	}
-	GetProjectsMapRules = []httplib.ErrMapRule{
-		MapRuleUnknownStatus,
-		MapRuleUnknownCategory,
-		MapRuleUnknownSort,
-	}
-	ApproveProjectMapRules = []httplib.ErrMapRule{
-		MapRuleProjectNotOnReview,
-	}
-	RejectProjectMapRules = []httplib.ErrMapRule{
-		MapRuleProjectNotOnReview,
-	}
-	TakeApplicationMapRules = []httplib.ErrMapRule{
-		MapRuleApplicationNotFound,
-	}
-	GetApplicationByProjectIDMapRules = []httplib.ErrMapRule{
-		MapRuleApplicationNotFound,
-	}
-	UpdateProjectMapRules = []httplib.ErrMapRule{
-		MapRuleApplicationNotFound,
-		MapRuleProjectExists,
-	}
-	BoostProjectMapRules = []httplib.ErrMapRule{
+	GetContributionsByProjectMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
-		MapRulePromoCodeNotFound,
-		MapRulePromoCodeUsed,
-		MapRulePromoCodeAccessDenied,
 	}
 )

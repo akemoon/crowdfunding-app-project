@@ -9,26 +9,15 @@ import (
 )
 
 const (
-	envPgDSN           = "POSTGRES_DSN"
-	envPgMigrationsDir = "POSTGRES_MIGRATIONS_DIR"
-
-	envKafkaBrokers              = "KAFKA_BROKERS"
-	envProjectTopic              = "PROJECT_TOPIC"
-	envContributionTopic         = "CONTRIBUTION_TOPIC"
-	envContributionConsumerGroup = "CONTRIBUTION_CONSUMER_GROUP"
-
-	envPromoBaseURL = "PROMO_BASE_URL"
-
-	// TODO: add envs
-	// envFinishWorkerInterval  = "FINISH_WORKER_INTERVAL"
-	// envPublishWorkerInterval = "PUBLISH_WORKER_INTERVAL"
-	// envPublishWorkerBatch    = "PUBLISH_WORKER_BATCH"
-	// envHTTPAddr = "HTTP_ADDR"
+	envPgDSN    = "POSTGRES_DSN"
+	envHTTPPort = "HTTP_PORT"
 )
 
-// @title Project service API
-// @version	1.0
-// @description	Projects service API for a crowdfunding app.
+// @title           Project Service API
+// @version         1.0
+// @description     REST API for the crowdfunding projects service.
+// @host            localhost:10001
+// @BasePath        /
 func main() {
 	mainCtx, stop := context.WithCancel(context.Background())
 	defer stop()
@@ -49,8 +38,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("run app: %v", err)
 	}
-
-	// TODO: graceful shutdown...
 }
 
 func loadConfigFromEnv() (AppConfig, error) {
@@ -59,49 +46,14 @@ func loadConfigFromEnv() (AppConfig, error) {
 		return AppConfig{}, err
 	}
 
-	migrationsDir, err := getRequiredEnv(envPgMigrationsDir)
-	if err != nil {
-		return AppConfig{}, err
-	}
-
-	brokersValue, err := getRequiredEnv(envKafkaBrokers)
-	if err != nil {
-		return AppConfig{}, err
-	}
-
-	brokers := parseBrokers(brokersValue)
-	if len(brokers) == 0 {
-		return AppConfig{}, fmt.Errorf("env %s is empty", envKafkaBrokers)
-	}
-
-	topic, err := getRequiredEnv(envProjectTopic)
-	if err != nil {
-		return AppConfig{}, err
-	}
-
-	contributionTopic, err := getRequiredEnv(envContributionTopic)
-	if err != nil {
-		return AppConfig{}, err
-	}
-
-	contributionConsumerGroup, err := getRequiredEnv(envContributionConsumerGroup)
-	if err != nil {
-		return AppConfig{}, err
-	}
-
-	promoBaseURL, err := getRequiredEnv(envPromoBaseURL)
-	if err != nil {
-		return AppConfig{}, err
+	port := strings.TrimSpace(os.Getenv(envHTTPPort))
+	if port == "" {
+		port = "10001"
 	}
 
 	return AppConfig{
-		PostgresDSN:               dsn,
-		PostgresMigrationsDir:     migrationsDir,
-		KafkaBrokers:              brokers,
-		ProjectTopic:              topic,
-		ContributionTopic:         contributionTopic,
-		ContributionConsumerGroup: contributionConsumerGroup,
-		PromoBaseURL:              promoBaseURL,
+		PostgresDSN: dsn,
+		HTTPAddr:    ":" + port,
 	}, nil
 }
 
@@ -111,18 +63,4 @@ func getRequiredEnv(key string) (string, error) {
 		return "", fmt.Errorf("env %s is empty", key)
 	}
 	return val, nil
-}
-
-func parseBrokers(value string) []string {
-	parts := strings.Split(value, ",")
-
-	brokers := make([]string, 0, len(parts))
-	for _, part := range parts {
-		trimmed := strings.TrimSpace(part)
-		if trimmed != "" {
-			brokers = append(brokers, trimmed)
-		}
-	}
-
-	return brokers
 }

@@ -1,0 +1,160 @@
+basePath: /
+definitions:
+  domain.Category:
+    enum:
+    - science
+    - tech
+    - architecture_and_urban
+    - sport
+    - music
+    type: string
+    x-enum-varnames:
+    - CategoryScience
+    - CategoryTech
+    - CategoryArchitectureAndUrban
+    - CategorySport
+    - CategoryMusic
+  domain.CreateProjectReq:
+    properties:
+      category:
+        $ref: '#/definitions/domain.Category'
+      currency:
+        $ref: '#/definitions/domain.Currency'
+      description:
+        type: string
+      duration_days:
+        type: integer
+      goal_amount:
+        type: integer
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.Currency:
+    enum:
+    - RUB
+    - USD
+    type: string
+    x-enum-varnames:
+    - CurrencyRUB
+    - CurrencyUSD
+  domain.Project:
+    properties:
+      category:
+        $ref: '#/definitions/domain.Category'
+      currency:
+        $ref: '#/definitions/domain.Currency'
+      description:
+        type: string
+      duration_days:
+        type: integer
+      goal_amount:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.Status'
+      user_id:
+        type: string
+    type: object
+  domain.Status:
+    enum:
+    - draft
+    - review
+    - active
+    - finished
+    type: string
+    x-enum-varnames:
+    - StatusDraft
+    - StatusReview
+    - StatusActive
+    - StatusFinished
+host: localhost:10001
+info:
+  contact: {}
+  description: REST API for the crowdfunding projects service.
+  title: Project Service API
+  version: "1.0"
+paths:
+  /projects:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Project'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: List all projects
+      tags:
+      - projects
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Project data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateProjectReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Project'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Create project
+      tags:
+      - projects
+  /projects/{id}:
+    get:
+      parameters:
+      - description: Project UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Project'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+      summary: Get project by ID
+      tags:
+      - projects
+swagger: "2.0"
