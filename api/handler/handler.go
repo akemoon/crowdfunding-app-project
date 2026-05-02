@@ -18,7 +18,7 @@ import (
 const (
 	userIDHeader   = "X-User-ID"
 	userRoleHeader = "X-User-Role"
-	moderatorRole  = "moderator"
+	moderatorRole  = "moder"
 )
 
 type RejectProjectReq struct {
