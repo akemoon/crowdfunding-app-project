@@ -57,6 +57,21 @@ var (
 )
 
 var (
+	MapRuleProjectImageNotFound = httplib.ErrMapRule{
+		Err:     domain.ErrProjectImageNotFound,
+		Status:  http.StatusNotFound,
+		Code:    "project_image_not_found",
+		Message: domain.ErrProjectImageNotFound.Error(),
+	}
+	MapRuleUnsupportedFileType = httplib.ErrMapRule{
+		Err:     domain.ErrUnsupportedFileType,
+		Status:  http.StatusBadRequest,
+		Code:    "unsupported_file_type",
+		Message: domain.ErrUnsupportedFileType.Error(),
+	}
+)
+
+var (
 	MapRulePromoCodeNotFound = httplib.ErrMapRule{
 		Err:     promocode.ErrPromoCodeNotFound,
 		Status:  http.StatusNotFound,
@@ -110,5 +125,13 @@ var (
 		MapRulePromoCodeNotFound,
 		MapRulePromoCodeUsed,
 		MapRulePromoCodeAccessDenied,
+	}
+	UploadProjectImageMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotFound,
+		MapRuleUnsupportedFileType,
+	}
+	DeleteProjectImageMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotFound,
+		MapRuleProjectImageNotFound,
 	}
 )

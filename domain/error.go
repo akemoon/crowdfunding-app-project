@@ -29,7 +29,10 @@ var (
 
 	ErrUnknownSort = errors.New("unknown sort")
 
-	ErrProjectNotOnReview       = errors.New("project is not on review")
-	ErrApplicationNotFound      = errors.New("application not found")
-	ErrApplicationAlreadyTaken  = errors.New("application is already taken")
+	ErrProjectNotOnReview      = errors.New("project is not on review")
+	ErrApplicationNotFound     = errors.New("application not found")
+	ErrApplicationAlreadyTaken = errors.New("application is already taken")
+
+	ErrProjectImageNotFound  = errors.New("project image not found")
+	ErrUnsupportedFileType   = errors.New("unsupported file type")
 )

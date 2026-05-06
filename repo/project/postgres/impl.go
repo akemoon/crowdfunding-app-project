@@ -29,19 +29,21 @@ func NewProjectRepo(db *sql.DB) *ProjectRepo {
 //go:embed sql/create_project.sql
 var createProjectSQL string
 
-func (r *ProjectRepo) CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) error {
+func (r *ProjectRepo) CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) (uuid.UUID, error) {
 	dbCategory, err := MapCategoryToDB(req.Category)
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
 	dbCurrency, err := MapCurrencyToDB(req.Currency)
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
+	var id uuid.UUID
+
 	// Prevent toctou: https://cwe.mitre.org/data/definitions/367.html
-	_, err = r.db.ExecContext(ctx, createProjectSQL,
+	err = r.db.QueryRowContext(ctx, createProjectSQL,
 		userID,
 		dbCategory,
 		req.Name,
@@ -49,12 +51,12 @@ func (r *ProjectRepo) CreateProject(ctx context.Context, userID uuid.UUID, req d
 		dbCurrency,
 		req.GoalAmount,
 		req.DurationDays,
-	)
+	).Scan(&id)
 	if err != nil {
-		return pglib.MapConstraintErr(err, projectConstraints, err)
+		return uuid.UUID{}, pglib.MapConstraintErr(err, projectConstraints, err)
 	}
 
-	return nil
+	return id, nil
 }
 
 //go:embed sql/get_project_by_id.sql
@@ -90,7 +92,87 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 		return domain.Project{}, err
 	}
 
+	images, err := r.fetchProjectImages(ctx, id)
+	if err != nil {
+		return domain.Project{}, err
+	}
+	p.Images = images
+
 	return p, nil
+}
+
+//go:embed sql/get_project_images.sql
+var getProjectImagesSQL string
+
+func (r *ProjectRepo) fetchProjectImages(ctx context.Context, projectID uuid.UUID) ([]domain.ProjectImage, error) {
+	rows, err := r.db.QueryContext(ctx, getProjectImagesSQL, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var images []domain.ProjectImage
+	for rows.Next() {
+		var img ProjectImageDB
+		err = rows.Scan(&img.ID, &img.URL, &img.StorageKey)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, MapProjectImageFromDB(img))
+	}
+
+	return images, rows.Err()
+}
+
+//go:embed sql/add_project_image.sql
+var addProjectImageSQL string
+
+func (r *ProjectRepo) AddProjectImage(ctx context.Context, projectID uuid.UUID, url, storageKey string) (uuid.UUID, error) {
+	var id uuid.UUID
+
+	err := r.db.QueryRowContext(ctx, addProjectImageSQL, projectID, url, storageKey).Scan(&id)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return id, nil
+}
+
+//go:embed sql/get_project_image.sql
+var getProjectImageSQL string
+
+func (r *ProjectRepo) GetProjectImage(ctx context.Context, imageID, projectID uuid.UUID) (domain.ProjectImage, error) {
+	var img ProjectImageDB
+
+	err := r.db.QueryRowContext(ctx, getProjectImageSQL, imageID, projectID).Scan(&img.ID, &img.URL, &img.StorageKey)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ProjectImage{}, domain.ErrProjectImageNotFound
+		}
+		return domain.ProjectImage{}, err
+	}
+
+	return MapProjectImageFromDB(img), nil
+}
+
+//go:embed sql/delete_project_image.sql
+var deleteProjectImageSQL string
+
+func (r *ProjectRepo) DeleteProjectImage(ctx context.Context, imageID, projectID uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx, deleteProjectImageSQL, imageID, projectID)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectImageNotFound
+	}
+
+	return nil
 }
 
 //go:embed sql/get_projects.sql
@@ -512,6 +594,14 @@ func (r *ProjectRepo) GetMyApplications(ctx context.Context, managerID uuid.UUID
 		app, err := MapApplicationFromDB(aDB, pDB)
 		if err != nil {
 			return nil, err
+		}
+
+		images, err := r.fetchProjectImages(ctx, pDB.ID)
+		if err != nil {
+			return nil, err
+		}
+		if app.Project != nil {
+			app.Project.Images = images
 		}
 
 		out = append(out, app)

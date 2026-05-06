@@ -32,20 +32,27 @@ type CreateProjectReq struct {
 	DurationDays int      `json:"durationDays"`
 }
 
+type ProjectImage struct {
+	ID         uuid.UUID `json:"id"`
+	URL        string    `json:"url"`
+	StorageKey string    `json:"-"`
+}
+
 type Project struct {
-	ID            uuid.UUID `json:"id"`
-	UserID        uuid.UUID `json:"userID"`
-	Category      Category  `json:"category"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Currency      Currency  `json:"currency"`
-	GoalAmount    int64     `json:"goalAmount"`
-	CurrentAmount int64     `json:"currentAmount"`
-	StartedAt     *time.Time `json:"startedAt,omitempty"`
-	DurationDays  int       `json:"durationDays"`
-	Status        Status    `json:"status"`
-	IsBoosted     bool       `json:"isBoosted"`
-	BoostedUntil  *time.Time `json:"boostedUntil,omitempty"`
+	ID            uuid.UUID      `json:"id"`
+	UserID        uuid.UUID      `json:"userID"`
+	Category      Category       `json:"category"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	Currency      Currency       `json:"currency"`
+	GoalAmount    int64          `json:"goalAmount"`
+	CurrentAmount int64          `json:"currentAmount"`
+	StartedAt     *time.Time     `json:"startedAt,omitempty"`
+	DurationDays  int            `json:"durationDays"`
+	Status        Status         `json:"status"`
+	IsBoosted     bool           `json:"isBoosted"`
+	BoostedUntil  *time.Time     `json:"boostedUntil,omitempty"`
+	Images        []ProjectImage `json:"images,omitempty"`
 }
 
 type Status string

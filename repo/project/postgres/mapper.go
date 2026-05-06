@@ -140,6 +140,14 @@ func MapApplicationFromDB(a ApplicationDB, p ProjectDB) (domain.Application, err
 	}, nil
 }
 
+func MapProjectImageFromDB(img ProjectImageDB) domain.ProjectImage {
+	return domain.ProjectImage{
+		ID:         img.ID,
+		URL:        img.URL,
+		StorageKey: img.StorageKey,
+	}
+}
+
 func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 	category, err := MapCategoryFromDB(p.CategoryID)
 	if err != nil {

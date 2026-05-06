@@ -9,6 +9,9 @@ with created as (
         duration_days
     ) values ($1, $2, $3, $4, $5, $6, $7)
     returning id
+),
+inserted_application as (
+    insert into project_applications (project_id)
+    select id from created
 )
-insert into project_applications (project_id)
 select id from created;

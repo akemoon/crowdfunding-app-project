@@ -19,6 +19,12 @@ const (
 
 	envPromoBaseURL = "PROMO_BASE_URL"
 
+	envMinioEndpoint  = "MINIO_ENDPOINT"
+	envMinioAccessKey = "MINIO_ACCESS_KEY"
+	envMinioSecretKey = "MINIO_SECRET_KEY"
+	envMinioBucket    = "MINIO_BUCKET"
+	envMinioPublicURL = "MINIO_PUBLIC_URL"
+
 	// TODO: add envs
 	// envFinishWorkerInterval  = "FINISH_WORKER_INTERVAL"
 	// envPublishWorkerInterval = "PUBLISH_WORKER_INTERVAL"
@@ -94,6 +100,31 @@ func loadConfigFromEnv() (AppConfig, error) {
 		return AppConfig{}, err
 	}
 
+	minioEndpoint, err := getRequiredEnv(envMinioEndpoint)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
+	minioAccessKey, err := getRequiredEnv(envMinioAccessKey)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
+	minioSecretKey, err := getRequiredEnv(envMinioSecretKey)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
+	minioBucket, err := getRequiredEnv(envMinioBucket)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
+	minioPublicURL, err := getRequiredEnv(envMinioPublicURL)
+	if err != nil {
+		return AppConfig{}, err
+	}
+
 	return AppConfig{
 		PostgresDSN:               dsn,
 		PostgresMigrationsDir:     migrationsDir,
@@ -102,6 +133,11 @@ func loadConfigFromEnv() (AppConfig, error) {
 		ContributionTopic:         contributionTopic,
 		ContributionConsumerGroup: contributionConsumerGroup,
 		PromoBaseURL:              promoBaseURL,
+		MinioEndpoint:             minioEndpoint,
+		MinioAccessKey:            minioAccessKey,
+		MinioSecretKey:            minioSecretKey,
+		MinioBucket:               minioBucket,
+		MinioPublicURL:            minioPublicURL,
 	}, nil
 }
 

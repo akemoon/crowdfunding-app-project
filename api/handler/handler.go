@@ -41,7 +41,7 @@ func CreateProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		err = svc.CreateProject(r.Context(), userID, req)
+		id, err := svc.CreateProject(r.Context(), userID, req)
 		if err != nil {
 			log.Printf("CreateProject: %v", err)
 			status, errResp := httplib.MapErrToHTTP(err, CreateProjectMapRules)
@@ -49,7 +49,7 @@ func CreateProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
+		httplib.WriteJSON(w, http.StatusCreated, map[string]any{"id": id})
 	}
 }
 
@@ -337,6 +337,79 @@ func GetPendingApplications(svc *project.Service) http.HandlerFunc {
 		}
 
 		httplib.WriteJSON(w, http.StatusOK, apps)
+	}
+}
+
+func UploadProjectImage(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		projectID, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		err = r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, "invalid multipart form", http.StatusBadRequest)
+			return
+		}
+
+		file, header, err := r.FormFile("image")
+		if err != nil {
+			http.Error(w, "missing image field", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		contentType := header.Header.Get("Content-Type")
+
+		img, err := svc.UploadProjectImage(r.Context(), userID, projectID, file, header.Size, contentType)
+		if err != nil {
+			log.Printf("UploadProjectImage: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, UploadProjectImageMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusCreated, img)
+	}
+}
+
+func DeleteProjectImage(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		projectID, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		imageID, err := uuid.Parse(r.PathValue("imageID"))
+		if err != nil {
+			http.Error(w, "invalid image id", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.DeleteProjectImage(r.Context(), userID, projectID, imageID)
+		if err != nil {
+			log.Printf("DeleteProjectImage: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, DeleteProjectImageMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

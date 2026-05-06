@@ -9,6 +9,7 @@ import (
 
 	"github.com/akemoon/crowdfunding-app-project/api"
 	"github.com/akemoon/crowdfunding-app-project/client/promocode/resty"
+	minioStorage "github.com/akemoon/crowdfunding-app-project/client/storage/minio"
 	"github.com/akemoon/crowdfunding-app-project/cluster/contribution"
 	"github.com/akemoon/crowdfunding-app-project/metrics"
 	"github.com/akemoon/crowdfunding-app-project/publisher/project"
@@ -41,6 +42,12 @@ type AppConfig struct {
 	// PublishWorkerBatch    int
 
 	PromoBaseURL string
+
+	MinioEndpoint  string
+	MinioAccessKey string
+	MinioSecretKey string
+	MinioBucket    string
+	MinioPublicURL string
 
 	HTTPAddr string
 }
@@ -131,7 +138,24 @@ func (a *App) InitServices() error {
 
 	promoClient := resty.NewPromoClient(a.config.PromoBaseURL)
 
-	a.projectSvc = projectSvc.NewService(repo, promoClient)
+	storageClient, err := minioStorage.NewStorageClient(
+		a.config.MinioEndpoint,
+		a.config.MinioAccessKey,
+		a.config.MinioSecretKey,
+		a.config.MinioBucket,
+		a.config.MinioPublicURL,
+		false,
+	)
+	if err != nil {
+		return fmt.Errorf("init minio: %w", err)
+	}
+
+	err = storageClient.EnsureBucket(a.ctx)
+	if err != nil {
+		return fmt.Errorf("ensure minio bucket: %w", err)
+	}
+
+	a.projectSvc = projectSvc.NewService(repo, promoClient, storageClient)
 
 	a.contributionConsumer = contribution.New(
 		a.config.KafkaBrokers,

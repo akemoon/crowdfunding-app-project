@@ -30,3 +30,9 @@ type ApplicationDB struct {
 	AssignedAt   *time.Time
 	ProcessedAt  *time.Time
 }
+
+type ProjectImageDB struct {
+	ID         uuid.UUID
+	URL        string
+	StorageKey string
+}

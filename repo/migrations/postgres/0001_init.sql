@@ -50,9 +50,16 @@ create table if not exists projects
     status_id      smallint    not null default 1 references project_statuses(id),
     boosted_until  timestamptz,
     finished_at    timestamptz,
-    -- TODO: cover_url text (MinIO presigned upload, minio-go)
-
     constraint projects_user_id_name_unique unique (user_id, name)
+);
+
+create table if not exists project_images
+(
+    id          uuid        primary key default uuidv7(),
+    project_id  uuid        not null references projects(id) on delete cascade,
+    url         text        not null,
+    storage_key text        not null,
+    created_at  timestamptz not null default now()
 );
 
 create table if not exists project_application_statuses
@@ -109,6 +116,7 @@ drop table if exists finished_projects_outbox;
 drop table if exists finished_projects_outbox_statuses;
 drop table if exists project_applications;
 drop table if exists project_application_statuses;
+drop table if exists project_images;
 drop table if exists projects;
 drop table if exists project_statuses;
 drop table if exists project_categories;

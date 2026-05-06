@@ -3,8 +3,10 @@ package project
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/akemoon/crowdfunding-app-project/client/promocode"
+	"github.com/akemoon/crowdfunding-app-project/client/storage"
 	"github.com/akemoon/crowdfunding-app-project/domain"
 	"github.com/akemoon/golib/validation"
 	"github.com/akemoon/crowdfunding-app-project/repo/project"
@@ -12,31 +14,33 @@ import (
 )
 
 type Service struct {
-	repo  project.Repo
-	promo promocode.Client
+	repo    project.Repo
+	promo   promocode.Client
+	storage storage.Client
 }
 
-func NewService(r project.Repo, promo promocode.Client) *Service {
+func NewService(r project.Repo, promo promocode.Client, storage storage.Client) *Service {
 	return &Service{
-		repo:  r,
-		promo: promo,
+		repo:    r,
+		promo:   promo,
+		storage: storage,
 	}
 }
 
-func (s *Service) CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) error {
+func (s *Service) CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) (uuid.UUID, error) {
 	// NOTE: check author account
 
 	err := validateCreateProjectReq(req)
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
-	err = s.repo.CreateProject(ctx, userID, req)
+	id, err := s.repo.CreateProject(ctx, userID, req)
 	if err != nil {
-		return fmt.Errorf("repo: %w", err)
+		return uuid.UUID{}, fmt.Errorf("repo: %w", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID, callerID *uuid.UUID) (domain.Project, error) {
@@ -203,6 +207,87 @@ func (s *Service) BoostProject(ctx context.Context, userID uuid.UUID, projectID 
 	err = s.repo.BoostProject(ctx, userID, projectID, days)
 	if err != nil {
 		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
+}
+
+var allowedImageTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/gif":  true,
+	"image/webp": true,
+}
+
+func imageExtension(contentType string) string {
+	switch contentType {
+	case "image/jpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/gif":
+		return ".gif"
+	case "image/webp":
+		return ".webp"
+	default:
+		return ".bin"
+	}
+}
+
+func (s *Service) UploadProjectImage(ctx context.Context, userID, projectID uuid.UUID, r io.Reader, size int64, contentType string) (domain.ProjectImage, error) {
+	if !allowedImageTypes[contentType] {
+		return domain.ProjectImage{}, domain.ErrUnsupportedFileType
+	}
+
+	p, err := s.repo.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return domain.ProjectImage{}, fmt.Errorf("repo: %w", err)
+	}
+
+	if p.UserID != userID {
+		return domain.ProjectImage{}, domain.ErrProjectNotFound
+	}
+
+	key := fmt.Sprintf("projects/%s/%s%s", projectID, uuid.New(), imageExtension(contentType))
+
+	url, err := s.storage.Upload(ctx, key, r, size, contentType)
+	if err != nil {
+		return domain.ProjectImage{}, fmt.Errorf("storage: %w", err)
+	}
+
+	// NOTE: non-atomic — file uploaded but DB insert may fail.
+	id, err := s.repo.AddProjectImage(ctx, projectID, url, key)
+	if err != nil {
+		return domain.ProjectImage{}, fmt.Errorf("repo: %w", err)
+	}
+
+	return domain.ProjectImage{ID: id, URL: url}, nil
+}
+
+func (s *Service) DeleteProjectImage(ctx context.Context, userID, projectID, imageID uuid.UUID) error {
+	p, err := s.repo.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	if p.UserID != userID {
+		return domain.ErrProjectNotFound
+	}
+
+	img, err := s.repo.GetProjectImage(ctx, imageID, projectID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	err = s.repo.DeleteProjectImage(ctx, imageID, projectID)
+	if err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	// NOTE: non-atomic — DB deleted but MinIO delete may fail.
+	err = s.storage.Delete(ctx, img.StorageKey)
+	if err != nil {
+		return fmt.Errorf("storage: %w", err)
 	}
 
 	return nil
