@@ -14,16 +14,18 @@ import (
 )
 
 type Service struct {
-	repo    project.Repo
-	promo   promocode.Client
-	storage storage.Client
+	repo          project.Repo
+	promo         promocode.Client
+	storage       storage.Client
+	imagesBaseURL string
 }
 
-func NewService(r project.Repo, promo promocode.Client, storage storage.Client) *Service {
+func NewService(r project.Repo, promo promocode.Client, storage storage.Client, imagesBaseURL string) *Service {
 	return &Service{
-		repo:    r,
-		promo:   promo,
-		storage: storage,
+		repo:          r,
+		promo:         promo,
+		storage:       storage,
+		imagesBaseURL: imagesBaseURL,
 	}
 }
 
@@ -55,6 +57,10 @@ func (s *Service) GetProjectByID(ctx context.Context, id uuid.UUID, callerID *uu
 
 		// Hide date
 		p.BoostedUntil = nil
+	}
+
+	for i := range p.Images {
+		p.Images[i].URL = s.imagesBaseURL + "/" + p.Images[i].StorageKey
 	}
 
 	return p, nil
@@ -171,6 +177,14 @@ func (s *Service) GetMyApplications(ctx context.Context, managerID uuid.UUID) ([
 		return nil, fmt.Errorf("repo: %w", err)
 	}
 
+	for i := range apps {
+		if apps[i].Project != nil {
+			for j := range apps[i].Project.Images {
+				apps[i].Project.Images[j].URL = s.imagesBaseURL + "/" + apps[i].Project.Images[j].StorageKey
+			}
+		}
+	}
+
 	return apps, nil
 }
 
@@ -250,18 +264,18 @@ func (s *Service) UploadProjectImage(ctx context.Context, userID, projectID uuid
 
 	key := fmt.Sprintf("projects/%s/%s%s", projectID, uuid.New(), imageExtension(contentType))
 
-	url, err := s.storage.Upload(ctx, key, r, size, contentType)
+	_, err = s.storage.Upload(ctx, key, r, size, contentType)
 	if err != nil {
 		return domain.ProjectImage{}, fmt.Errorf("storage: %w", err)
 	}
 
 	// NOTE: non-atomic — file uploaded but DB insert may fail.
-	id, err := s.repo.AddProjectImage(ctx, projectID, url, key)
+	id, err := s.repo.AddProjectImage(ctx, projectID, key)
 	if err != nil {
 		return domain.ProjectImage{}, fmt.Errorf("repo: %w", err)
 	}
 
-	return domain.ProjectImage{ID: id, URL: url}, nil
+	return domain.ProjectImage{ID: id, URL: s.imagesBaseURL + "/" + key}, nil
 }
 
 func (s *Service) DeleteProjectImage(ctx context.Context, userID, projectID, imageID uuid.UUID) error {

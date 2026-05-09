@@ -57,8 +57,7 @@ create table if not exists project_images
 (
     id          uuid        primary key default uuidv7(),
     project_id  uuid        not null references projects(id) on delete cascade,
-    url         text        not null,
-    storage_key text        not null,
+    storage_key text        not null unique,
     created_at  timestamptz not null default now()
 );
 

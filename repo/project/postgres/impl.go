@@ -114,7 +114,7 @@ func (r *ProjectRepo) fetchProjectImages(ctx context.Context, projectID uuid.UUI
 	var images []domain.ProjectImage
 	for rows.Next() {
 		var img ProjectImageDB
-		err = rows.Scan(&img.ID, &img.URL, &img.StorageKey)
+		err = rows.Scan(&img.ID, &img.StorageKey)
 		if err != nil {
 			return nil, err
 		}
@@ -127,10 +127,10 @@ func (r *ProjectRepo) fetchProjectImages(ctx context.Context, projectID uuid.UUI
 //go:embed sql/add_project_image.sql
 var addProjectImageSQL string
 
-func (r *ProjectRepo) AddProjectImage(ctx context.Context, projectID uuid.UUID, url, storageKey string) (uuid.UUID, error) {
+func (r *ProjectRepo) AddProjectImage(ctx context.Context, projectID uuid.UUID, storageKey string) (uuid.UUID, error) {
 	var id uuid.UUID
 
-	err := r.db.QueryRowContext(ctx, addProjectImageSQL, projectID, url, storageKey).Scan(&id)
+	err := r.db.QueryRowContext(ctx, addProjectImageSQL, projectID, storageKey).Scan(&id)
 	if err != nil {
 		return uuid.UUID{}, err
 	}
@@ -144,7 +144,7 @@ var getProjectImageSQL string
 func (r *ProjectRepo) GetProjectImage(ctx context.Context, imageID, projectID uuid.UUID) (domain.ProjectImage, error) {
 	var img ProjectImageDB
 
-	err := r.db.QueryRowContext(ctx, getProjectImageSQL, imageID, projectID).Scan(&img.ID, &img.URL, &img.StorageKey)
+	err := r.db.QueryRowContext(ctx, getProjectImageSQL, imageID, projectID).Scan(&img.ID, &img.StorageKey)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.ProjectImage{}, domain.ErrProjectImageNotFound

@@ -143,7 +143,6 @@ func MapApplicationFromDB(a ApplicationDB, p ProjectDB) (domain.Application, err
 func MapProjectImageFromDB(img ProjectImageDB) domain.ProjectImage {
 	return domain.ProjectImage{
 		ID:         img.ID,
-		URL:        img.URL,
 		StorageKey: img.StorageKey,
 	}
 }

@@ -28,7 +28,7 @@ type Repo interface {
 
 	BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error
 
-	AddProjectImage(ctx context.Context, projectID uuid.UUID, url, storageKey string) (uuid.UUID, error)
+	AddProjectImage(ctx context.Context, projectID uuid.UUID, storageKey string) (uuid.UUID, error)
 	GetProjectImage(ctx context.Context, imageID, projectID uuid.UUID) (domain.ProjectImage, error)
 	DeleteProjectImage(ctx context.Context, imageID, projectID uuid.UUID) error
 }

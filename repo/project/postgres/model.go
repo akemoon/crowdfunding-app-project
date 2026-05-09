@@ -33,6 +33,5 @@ type ApplicationDB struct {
 
 type ProjectImageDB struct {
 	ID         uuid.UUID
-	URL        string
 	StorageKey string
 }

@@ -155,7 +155,7 @@ func (a *App) InitServices() error {
 		return fmt.Errorf("ensure minio bucket: %w", err)
 	}
 
-	a.projectSvc = projectSvc.NewService(repo, promoClient, storageClient)
+	a.projectSvc = projectSvc.NewService(repo, promoClient, storageClient, a.config.MinioPublicURL+"/"+a.config.MinioBucket)
 
 	a.contributionConsumer = contribution.New(
 		a.config.KafkaBrokers,
