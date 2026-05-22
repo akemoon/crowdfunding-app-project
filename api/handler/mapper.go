@@ -27,15 +27,36 @@ var (
 		Code:    "project_not_on_review",
 		Message: domain.ErrProjectNotOnReview.Error(),
 	}
+	MapRuleProjectNotDraft = httplib.ErrMapRule{
+		Err:     domain.ErrProjectNotDraft,
+		Status:  http.StatusConflict,
+		Code:    "project_not_draft",
+		Message: domain.ErrProjectNotDraft.Error(),
+	}
+	MapRuleProjectNotActive = httplib.ErrMapRule{
+		Err:     domain.ErrProjectNotActive,
+		Status:  http.StatusConflict,
+		Code:    "project_not_active",
+		Message: domain.ErrProjectNotActive.Error(),
+	}
+	MapRuleProjectImageNotFound = httplib.ErrMapRule{
+		Err:     domain.ErrProjectImageNotFound,
+		Status:  http.StatusNotFound,
+		Code:    "project_image_not_found",
+		Message: domain.ErrProjectImageNotFound.Error(),
+	}
 	MapRuleApplicationNotFound = httplib.ErrMapRule{
 		Err:     domain.ErrApplicationNotFound,
 		Status:  http.StatusNotFound,
 		Code:    "application_not_found",
 		Message: domain.ErrApplicationNotFound.Error(),
 	}
-)
-
-var (
+	MapRuleForbidden = httplib.ErrMapRule{
+		Err:     domain.ErrForbidden,
+		Status:  http.StatusForbidden,
+		Code:    "forbidden",
+		Message: domain.ErrForbidden.Error(),
+	}
 	MapRuleUnknownStatus = httplib.ErrMapRule{
 		Err:     domain.ErrUnknownStatus,
 		Status:  http.StatusBadRequest,
@@ -54,41 +75,23 @@ var (
 		Code:    "unknown_sort",
 		Message: domain.ErrUnknownSort.Error(),
 	}
-)
-
-var (
-	MapRuleProjectImageNotFound = httplib.ErrMapRule{
-		Err:     domain.ErrProjectImageNotFound,
-		Status:  http.StatusNotFound,
-		Code:    "project_image_not_found",
-		Message: domain.ErrProjectImageNotFound.Error(),
-	}
 	MapRuleUnsupportedFileType = httplib.ErrMapRule{
 		Err:     domain.ErrUnsupportedFileType,
 		Status:  http.StatusBadRequest,
 		Code:    "unsupported_file_type",
 		Message: domain.ErrUnsupportedFileType.Error(),
 	}
-)
-
-var (
+	MapRuleProjectCoverRequired = httplib.ErrMapRule{
+		Err:     domain.ErrProjectCoverRequired,
+		Status:  http.StatusUnprocessableEntity,
+		Code:    "project_cover_required",
+		Message: domain.ErrProjectCoverRequired.Error(),
+	}
 	MapRulePromoCodeNotFound = httplib.ErrMapRule{
 		Err:     promocode.ErrPromoCodeNotFound,
 		Status:  http.StatusNotFound,
 		Code:    "promo_code_not_found",
 		Message: promocode.ErrPromoCodeNotFound.Error(),
-	}
-	MapRulePromoCodeUsed = httplib.ErrMapRule{
-		Err:     promocode.ErrPromoCodeUsed,
-		Status:  http.StatusConflict,
-		Code:    "promo_code_already_used",
-		Message: promocode.ErrPromoCodeUsed.Error(),
-	}
-	MapRulePromoCodeAccessDenied = httplib.ErrMapRule{
-		Err:     promocode.ErrPromoCodeForbidden,
-		Status:  http.StatusForbidden,
-		Code:    "promo_code_access_denied",
-		Message: promocode.ErrPromoCodeForbidden.Error(),
 	}
 )
 
@@ -117,17 +120,33 @@ var (
 		MapRuleApplicationNotFound,
 	}
 	UpdateProjectMapRules = []httplib.ErrMapRule{
-		MapRuleApplicationNotFound,
+		MapRuleProjectNotFound,
+		MapRuleForbidden,
+		MapRuleProjectNotDraft,
 		MapRuleProjectExists,
 	}
 	BoostProjectMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
+		MapRuleForbidden,
+		MapRuleProjectNotActive,
 		MapRulePromoCodeNotFound,
-		MapRulePromoCodeUsed,
-		MapRulePromoCodeAccessDenied,
+	}
+	SubmitProjectMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotFound,
+		MapRuleForbidden,
+		MapRuleProjectNotDraft,
+		MapRuleProjectCoverRequired,
+	}
+	UploadProjectCoverMapRules = []httplib.ErrMapRule{
+		MapRuleProjectNotFound,
+		MapRuleForbidden,
+		MapRuleProjectNotDraft,
+		MapRuleUnsupportedFileType,
 	}
 	UploadProjectImageMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
+		MapRuleForbidden,
+		MapRuleProjectNotDraft,
 		MapRuleUnsupportedFileType,
 	}
 	DeleteProjectImageMapRules = []httplib.ErrMapRule{

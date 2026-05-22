@@ -9,6 +9,7 @@ import (
 
 type Repo interface {
 	CreateProject(ctx context.Context, userID uuid.UUID, req domain.CreateProjectReq) (uuid.UUID, error)
+	SubmitProject(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	GetProjectByID(ctx context.Context, id uuid.UUID) (domain.Project, error)
 	GetProjects(ctx context.Context, req domain.GetProjectsReq) ([]domain.Project, error)
 	GetProjectsByUserID(ctx context.Context, authorID uuid.UUID, isOwner bool) ([]domain.Project, error)
@@ -28,6 +29,7 @@ type Repo interface {
 
 	BoostProject(ctx context.Context, userID uuid.UUID, projectID uuid.UUID, days int) error
 
+	SetProjectCover(ctx context.Context, projectID uuid.UUID, userID uuid.UUID, key string) error
 	AddProjectImage(ctx context.Context, projectID uuid.UUID, storageKey string) (uuid.UUID, error)
 	GetProjectImage(ctx context.Context, imageID, projectID uuid.UUID) (domain.ProjectImage, error)
 	DeleteProjectImage(ctx context.Context, imageID, projectID uuid.UUID) error

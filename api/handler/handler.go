@@ -53,6 +53,40 @@ func CreateProject(svc *project.Service) http.HandlerFunc {
 	}
 }
 
+func UpdateProject(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		var req domain.CreateProjectReq
+
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.UpdateProject(r.Context(), userID, id, req)
+		if err != nil {
+			log.Printf("UpdateProject: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, UpdateProjectMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func GetProjects(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -340,6 +374,32 @@ func GetPendingApplications(svc *project.Service) http.HandlerFunc {
 	}
 }
 
+func SubmitProject(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		err = svc.SubmitProject(r.Context(), id, userID)
+		if err != nil {
+			log.Printf("SubmitProject: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, SubmitProjectMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func UploadProjectImage(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -378,6 +438,47 @@ func UploadProjectImage(svc *project.Service) http.HandlerFunc {
 		}
 
 		httplib.WriteJSON(w, http.StatusCreated, img)
+	}
+}
+
+func UploadProjectCover(svc *project.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		projectID, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "invalid project id", http.StatusBadRequest)
+			return
+		}
+
+		err = r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, "invalid multipart form", http.StatusBadRequest)
+			return
+		}
+
+		file, header, err := r.FormFile("cover")
+		if err != nil {
+			http.Error(w, "missing cover field", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		contentType := header.Header.Get("Content-Type")
+
+		coverURL, err := svc.UploadProjectCover(r.Context(), userID, projectID, file, header.Size, contentType)
+		if err != nil {
+			log.Printf("UploadProjectCover: %v", err)
+			status, errResp := httplib.MapErrToHTTP(err, UploadProjectCoverMapRules)
+			httplib.WriteJSON(w, status, errResp)
+			return
+		}
+
+		httplib.WriteJSON(w, http.StatusOK, map[string]string{"coverURL": coverURL})
 	}
 }
 

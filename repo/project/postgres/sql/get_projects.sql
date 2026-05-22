@@ -11,6 +11,7 @@ with scored as (
         started_at,
         duration_days,
         boosted_until is not null and boosted_until > now() as is_boosted,
+        cover_key,
         (
             -- freshness: -0.5 per day since start
             -0.5 * (current_date - started_at::date)
@@ -48,7 +49,8 @@ select
     started_at,
     duration_days,
     status_id,
-    is_boosted
+    is_boosted,
+    cover_key
 from scored
 order by
     case when $6 = 'default' then score end desc nulls last,

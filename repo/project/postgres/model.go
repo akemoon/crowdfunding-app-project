@@ -20,6 +20,7 @@ type ProjectDB struct {
 	StatusID      int
 	IsBoosted     bool
 	BoostedUntil  *time.Time
+	CoverKey      *string
 }
 
 type ApplicationDB struct {

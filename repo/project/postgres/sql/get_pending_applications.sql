@@ -14,7 +14,8 @@ select
     p.current_amount,
     p.duration_days,
     p.status_id,
-    p.boosted_until is not null and p.boosted_until > now() as is_boosted
+    p.boosted_until is not null and p.boosted_until > now() as is_boosted,
+    p.cover_key
 from project_applications pa
 join projects p on p.id = pa.project_id
 where pa.status_id = 1

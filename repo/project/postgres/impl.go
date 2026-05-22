@@ -42,7 +42,6 @@ func (r *ProjectRepo) CreateProject(ctx context.Context, userID uuid.UUID, req d
 
 	var id uuid.UUID
 
-	// Prevent toctou: https://cwe.mitre.org/data/definitions/367.html
 	err = r.db.QueryRowContext(ctx, createProjectSQL,
 		userID,
 		dbCategory,
@@ -57,6 +56,26 @@ func (r *ProjectRepo) CreateProject(ctx context.Context, userID uuid.UUID, req d
 	}
 
 	return id, nil
+}
+
+//go:embed sql/submit_project.sql
+var submitProjectSQL string
+
+func (r *ProjectRepo) SubmitProject(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx, submitProjectSQL, id, userID)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectNotDraft
+	}
+
+	return nil
 }
 
 //go:embed sql/get_project_by_id.sql
@@ -79,6 +98,7 @@ func (r *ProjectRepo) GetProjectByID(ctx context.Context, id uuid.UUID) (domain.
 		&pDB.StatusID,
 		&pDB.IsBoosted,
 		&pDB.BoostedUntil,
+		&pDB.CoverKey,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -223,6 +243,7 @@ func (r *ProjectRepo) GetProjects(ctx context.Context, req domain.GetProjectsReq
 			&pDB.DurationDays,
 			&pDB.StatusID,
 			&pDB.IsBoosted,
+			&pDB.CoverKey,
 		); err != nil {
 			return nil, err
 		}
@@ -269,6 +290,7 @@ func (r *ProjectRepo) GetProjectsByUserID(ctx context.Context, authorID uuid.UUI
 			&pDB.DurationDays,
 			&pDB.StatusID,
 			&pDB.IsBoosted,
+			&pDB.CoverKey,
 		); err != nil {
 			return nil, err
 		}
@@ -513,6 +535,7 @@ func (r *ProjectRepo) GetPendingApplications(ctx context.Context) ([]domain.Appl
 			&pDB.DurationDays,
 			&pDB.StatusID,
 			&pDB.IsBoosted,
+			&pDB.CoverKey,
 		); err != nil {
 			return nil, err
 		}
@@ -587,6 +610,7 @@ func (r *ProjectRepo) GetMyApplications(ctx context.Context, managerID uuid.UUID
 			&pDB.DurationDays,
 			&pDB.StatusID,
 			&pDB.IsBoosted,
+			&pDB.CoverKey,
 		); err != nil {
 			return nil, err
 		}
@@ -612,6 +636,26 @@ func (r *ProjectRepo) GetMyApplications(ctx context.Context, managerID uuid.UUID
 	}
 
 	return out, nil
+}
+
+//go:embed sql/set_project_cover.sql
+var setProjectCoverSQL string
+
+func (r *ProjectRepo) SetProjectCover(ctx context.Context, projectID uuid.UUID, userID uuid.UUID, key string) error {
+	res, err := r.db.ExecContext(ctx, setProjectCoverSQL, projectID, key)
+	if err != nil {
+		return err
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return domain.ErrProjectNotDraft
+	}
+
+	return nil
 }
 
 //go:embed sql/boost_project.sql

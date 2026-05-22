@@ -14,6 +14,8 @@ func MapStatusToDB(s domain.Status) (int, error) {
 		return 2, nil
 	case domain.StatusFinished:
 		return 3, nil
+	case domain.StatusDraft:
+		return 4, nil
 	default:
 		return 0, fmt.Errorf("%w: map status to db err", domain.ErrInternal)
 	}
@@ -27,6 +29,8 @@ func MapStatusFromDB(id int) (domain.Status, error) {
 		return domain.StatusActive, nil
 	case 3:
 		return domain.StatusFinished, nil
+	case 4:
+		return domain.StatusDraft, nil
 	default:
 		return "", fmt.Errorf("%w: map status from db err", domain.ErrInternal)
 	}
@@ -44,6 +48,20 @@ func MapCategoryToDB(c domain.Category) (int, error) {
 		return 4, nil
 	case domain.CategoryMusic:
 		return 5, nil
+	case domain.CategoryArt:
+		return 6, nil
+	case domain.CategoryFilm:
+		return 7, nil
+	case domain.CategoryGames:
+		return 8, nil
+	case domain.CategoryEducation:
+		return 9, nil
+	case domain.CategoryFood:
+		return 10, nil
+	case domain.CategoryFashion:
+		return 11, nil
+	case domain.CategoryHealth:
+		return 12, nil
 	default:
 		return 0, fmt.Errorf("%w: map category to db err", domain.ErrInternal)
 	}
@@ -72,6 +90,20 @@ func MapCategoryFromDB(id int) (domain.Category, error) {
 		return domain.CategorySport, nil
 	case 5:
 		return domain.CategoryMusic, nil
+	case 6:
+		return domain.CategoryArt, nil
+	case 7:
+		return domain.CategoryFilm, nil
+	case 8:
+		return domain.CategoryGames, nil
+	case 9:
+		return domain.CategoryEducation, nil
+	case 10:
+		return domain.CategoryFood, nil
+	case 11:
+		return domain.CategoryFashion, nil
+	case 12:
+		return domain.CategoryHealth, nil
 	default:
 		return "", fmt.Errorf("%w: map category from db err", domain.ErrInternal)
 	}
@@ -177,5 +209,6 @@ func MapProjectFromDB(p ProjectDB) (domain.Project, error) {
 		Status:        status,
 		IsBoosted:     p.IsBoosted,
 		BoostedUntil:  p.BoostedUntil,
+		CoverKey:      p.CoverKey,
 	}, nil
 }

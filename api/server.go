@@ -29,7 +29,10 @@ func (s *Server) AddProjectHandlers(svc *project.Service) {
 	s.r.HandleFunc("GET /projects/user", handler.GetMyProjects(svc))
 	s.r.HandleFunc("GET /projects/user/{id}", handler.GetProjectsByUserID(svc))
 	s.r.HandleFunc("GET /projects/{id}", handler.GetProjectByID(svc))
+	s.r.HandleFunc("PUT /projects/{id}", handler.UpdateProject(svc))
+	s.r.HandleFunc("POST /projects/{id}/submit", handler.SubmitProject(svc))
 	s.r.HandleFunc("POST /projects/{id}/boost", handler.BoostProject(svc))
+	s.r.HandleFunc("POST /projects/{id}/cover", handler.UploadProjectCover(svc))
 	s.r.HandleFunc("POST /projects/{id}/images", handler.UploadProjectImage(svc))
 	s.r.HandleFunc("DELETE /projects/{id}/images/{imageID}", handler.DeleteProjectImage(svc))
 

@@ -1,7 +1,10 @@
 package domain
 
 import (
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -14,6 +17,13 @@ const (
 	CategoryArchitectureAndUrban Category = "architecture_and_urban"
 	CategorySport                Category = "sport"
 	CategoryMusic                Category = "music"
+	CategoryArt                  Category = "art"
+	CategoryFilm                 Category = "film"
+	CategoryGames                Category = "games"
+	CategoryEducation            Category = "education"
+	CategoryFood                 Category = "food"
+	CategoryFashion              Category = "fashion"
+	CategoryHealth               Category = "health"
 )
 
 type Currency string
@@ -52,25 +62,20 @@ type Project struct {
 	Status        Status         `json:"status"`
 	IsBoosted     bool           `json:"isBoosted"`
 	BoostedUntil  *time.Time     `json:"boostedUntil,omitempty"`
+	CoverURL      string         `json:"coverURL,omitempty"`
+	CoverKey      *string        `json:"-"`
 	Images        []ProjectImage `json:"images,omitempty"`
 }
 
 type Status string
 
 const (
+	StatusDraft    Status = "draft"
 	StatusReview   Status = "review"
 	StatusActive   Status = "active"
 	StatusFinished Status = "finished"
 )
 
-func ValidateStatus(s Status) error {
-	switch s {
-	case StatusReview, StatusActive, StatusFinished:
-		return nil
-	default:
-		return ErrUnknownStatus
-	}
-}
 
 type ApplicationStatus string
 
@@ -124,8 +129,26 @@ const (
 	MaxNameLen = 100
 )
 
+var allowedNamePunct = map[rune]bool{
+	'.': true, ',': true, '!': true, '?': true,
+	'-': true, '\'': true, '"': true, ':': true,
+}
+
 func ValidateName(name string) error {
-	if len(name) < MinNameLen || len(name) > MaxNameLen {
+	n := utf8.RuneCountInString(name)
+	if n < MinNameLen || n > MaxNameLen {
+		return ErrInvalidNameLen
+	}
+	if name != strings.TrimSpace(name) {
+		return ErrInvalidNameLen
+	}
+	if strings.Contains(name, "  ") {
+		return ErrInvalidNameLen
+	}
+	for _, r := range name {
+		if unicode.Is(unicode.Latin, r) || unicode.Is(unicode.Cyrillic, r) || unicode.IsDigit(r) || r == ' ' || allowedNamePunct[r] {
+			continue
+		}
 		return ErrInvalidNameLen
 	}
 	return nil
@@ -176,7 +199,9 @@ func ValidateCurrency(c Currency) error {
 func ValidateCategory(c Category) error {
 	switch c {
 	case CategoryScience, CategoryTech, CategoryArchitectureAndUrban,
-		CategoryMusic, CategorySport:
+		CategorySport, CategoryMusic, CategoryArt, CategoryFilm,
+		CategoryGames, CategoryEducation, CategoryFood, CategoryFashion,
+		CategoryHealth:
 		return nil
 	default:
 		return ErrUnknownCategory

@@ -16,13 +16,19 @@ create table if not exists project_categories
     name text not null unique
 );
 
--- TODO: add more categories
 insert into project_categories (id, name) values
 (1, 'science'),
 (2, 'tech'),
 (3, 'architecture_and_urban'),
 (4, 'sport'),
-(5, 'music');
+(5, 'music'),
+(6, 'art'),
+(7, 'film'),
+(8, 'games'),
+(9, 'education'),
+(10, 'food'),
+(11, 'fashion'),
+(12, 'health');
 
 create table if not exists project_statuses
 (
@@ -33,7 +39,8 @@ create table if not exists project_statuses
 insert into project_statuses (id, name) values
 (1, 'review'),
 (2, 'active'),
-(3, 'finished');
+(3, 'finished'),
+(4, 'draft');
 
 create table if not exists projects
 (
@@ -50,6 +57,7 @@ create table if not exists projects
     status_id      smallint    not null default 1 references project_statuses(id),
     boosted_until  timestamptz,
     finished_at    timestamptz,
+    cover_key      text,
     constraint projects_user_id_name_unique unique (user_id, name)
 );
 

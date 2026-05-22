@@ -48,14 +48,6 @@ func (c *PromoClient) UsePromoCode(ctx context.Context, userID uuid.UUID, code s
 		return 0, promocode.ErrPromoCodeNotFound
 	}
 
-	if resp.StatusCode() == http.StatusForbidden {
-		return 0, promocode.ErrPromoCodeForbidden
-	}
-
-	if resp.StatusCode() == http.StatusConflict {
-		return 0, promocode.ErrPromoCodeUsed
-	}
-
 	if resp.StatusCode() != http.StatusOK {
 		return 0, fmt.Errorf("use promo code: unexpected status: %d", resp.StatusCode())
 	}
