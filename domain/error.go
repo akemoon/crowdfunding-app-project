@@ -46,4 +46,6 @@ var (
 	ErrUnsupportedFileType = errors.New("unsupported file type")
 
 	ErrProjectCoverRequired = errors.New("project cover is required")
+
+	ErrFileTooLarge = errors.New("file too large")
 )

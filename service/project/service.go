@@ -282,6 +282,9 @@ func (s *Service) BoostProject(ctx context.Context, userID uuid.UUID, projectID 
 }
 
 func (s *Service) UploadProjectCover(ctx context.Context, userID, projectID uuid.UUID, r io.Reader, size int64, contentType string) (string, error) {
+	if size > domain.MaxImageSize {
+		return "", domain.ErrFileTooLarge
+	}
 	if !allowedImageTypes[contentType] {
 		return "", domain.ErrUnsupportedFileType
 	}
@@ -311,6 +314,10 @@ func (s *Service) UploadProjectCover(ctx context.Context, userID, projectID uuid
 		return "", fmt.Errorf("repo: %w", err)
 	}
 
+	if p.CoverKey != nil && *p.CoverKey != key {
+		_ = s.storage.Delete(ctx, *p.CoverKey)
+	}
+
 	return s.imagesBaseURL + "/" + key, nil
 }
 
@@ -337,6 +344,9 @@ func imageExtension(contentType string) string {
 }
 
 func (s *Service) UploadProjectImage(ctx context.Context, userID, projectID uuid.UUID, r io.Reader, size int64, contentType string) (domain.ProjectImage, error) {
+	if size > domain.MaxImageSize {
+		return domain.ProjectImage{}, domain.ErrFileTooLarge
+	}
 	if !allowedImageTypes[contentType] {
 		return domain.ProjectImage{}, domain.ErrUnsupportedFileType
 	}
@@ -361,7 +371,7 @@ func (s *Service) UploadProjectImage(ctx context.Context, userID, projectID uuid
 		return domain.ProjectImage{}, fmt.Errorf("storage: %w", err)
 	}
 
-	// NOTE: non-atomic — file uploaded but DB insert may fail.
+	// NOTE: non-atomic - file uploaded but DB insert may fail.
 	id, err := s.repo.AddProjectImage(ctx, projectID, key)
 	if err != nil {
 		return domain.ProjectImage{}, fmt.Errorf("repo: %w", err)
@@ -390,7 +400,7 @@ func (s *Service) DeleteProjectImage(ctx context.Context, userID, projectID, ima
 		return fmt.Errorf("repo: %w", err)
 	}
 
-	// NOTE: non-atomic — DB deleted but MinIO delete may fail.
+	// NOTE: non-atomic - DB deleted but MinIO delete may fail.
 	err = s.storage.Delete(ctx, img.StorageKey)
 	if err != nil {
 		return fmt.Errorf("storage: %w", err)

@@ -83,7 +83,7 @@ insert into project_application_statuses (id, name) values
 
 -- project_applications is a separate entity (not just a status on projects) because:
 --   1. it carries manager-specific fields (assigned_to, reject_reason, timestamps)
---   2. in the future it should become 1:many — one project may have multiple applications
+--   2. in the future it should become 1:many - one project may have multiple applications
 --      (e.g. re-submission after rejection), each with its own lifecycle and history
 -- TODO: migrate to 1:many by adding id bigserial PK and removing project_id as PK
 --       (keep project_id as FK + index); manager actions will then reference application id

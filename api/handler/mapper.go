@@ -81,6 +81,12 @@ var (
 		Code:    "unsupported_file_type",
 		Message: domain.ErrUnsupportedFileType.Error(),
 	}
+	MapRuleFileTooLarge = httplib.ErrMapRule{
+		Err:     domain.ErrFileTooLarge,
+		Status:  http.StatusRequestEntityTooLarge,
+		Code:    "file_too_large",
+		Message: domain.ErrFileTooLarge.Error(),
+	}
 	MapRuleProjectCoverRequired = httplib.ErrMapRule{
 		Err:     domain.ErrProjectCoverRequired,
 		Status:  http.StatusUnprocessableEntity,
@@ -141,12 +147,14 @@ var (
 		MapRuleProjectNotFound,
 		MapRuleForbidden,
 		MapRuleProjectNotDraft,
+		MapRuleFileTooLarge,
 		MapRuleUnsupportedFileType,
 	}
 	UploadProjectImageMapRules = []httplib.ErrMapRule{
 		MapRuleProjectNotFound,
 		MapRuleForbidden,
 		MapRuleProjectNotDraft,
+		MapRuleFileTooLarge,
 		MapRuleUnsupportedFileType,
 	}
 	DeleteProjectImageMapRules = []httplib.ErrMapRule{

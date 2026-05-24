@@ -3,7 +3,6 @@ package domain
 import (
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -126,29 +125,16 @@ type GetProjectsResp struct {
 
 const (
 	MinNameLen = 1
-	MaxNameLen = 100
+	MaxNameLen = 80
 )
 
-var allowedNamePunct = map[rune]bool{
-	'.': true, ',': true, '!': true, '?': true,
-	'-': true, '\'': true, '"': true, ':': true,
-}
-
 func ValidateName(name string) error {
+	name = strings.TrimSpace(name)
 	n := utf8.RuneCountInString(name)
 	if n < MinNameLen || n > MaxNameLen {
 		return ErrInvalidNameLen
 	}
-	if name != strings.TrimSpace(name) {
-		return ErrInvalidNameLen
-	}
-	if strings.Contains(name, "  ") {
-		return ErrInvalidNameLen
-	}
-	for _, r := range name {
-		if unicode.Is(unicode.Latin, r) || unicode.Is(unicode.Cyrillic, r) || unicode.IsDigit(r) || r == ' ' || allowedNamePunct[r] {
-			continue
-		}
+	if strings.ContainsAny(name, "\n\r") {
 		return ErrInvalidNameLen
 	}
 	return nil
@@ -156,20 +142,26 @@ func ValidateName(name string) error {
 
 const (
 	MinDescriptionLen = 0
-	MaxDescriptionLen = 1000
+	MaxDescriptionLen = 10000
 )
 
 func ValidateDescription(description string) error {
-	if len(description) < MinDescriptionLen || len(description) > MaxDescriptionLen {
+	n := utf8.RuneCountInString(description)
+	if n < MinDescriptionLen || n > MaxDescriptionLen {
 		return ErrInvalidDescriptionLen
 	}
 	return nil
 }
 
-const MinGoalAmount = 1
+const MaxImageSize int64 = 5 << 20 // 5 MB
+
+const (
+	MinGoalAmount = 1
+	MaxGoalAmount = 100_000_000
+)
 
 func ValidateGoalAmount(amount int64) error {
-	if amount < MinGoalAmount {
+	if amount < MinGoalAmount || amount > MaxGoalAmount {
 		return ErrInvalidGoalAmount
 	}
 	return nil
