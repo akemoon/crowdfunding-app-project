@@ -21,10 +21,6 @@ const (
 	moderatorRole  = "moder"
 )
 
-type RejectProjectReq struct {
-	Reason string `json:"reason"`
-}
-
 func CreateProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -247,7 +243,7 @@ func RejectProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		var req RejectProjectReq
+		var req domain.RejectProjectReq
 
 		err = json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -514,10 +510,6 @@ func DeleteProjectImage(svc *project.Service) http.HandlerFunc {
 	}
 }
 
-type BoostProjectReq struct {
-	PromoCode string `json:"promoCode"`
-}
-
 func BoostProject(svc *project.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := httplib.ParseUUIDHeader(r, userIDHeader)
@@ -532,7 +524,7 @@ func BoostProject(svc *project.Service) http.HandlerFunc {
 			return
 		}
 
-		var req BoostProjectReq
+		var req domain.BoostProjectReq
 
 		err = json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {

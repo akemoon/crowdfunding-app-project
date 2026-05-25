@@ -41,6 +41,14 @@ type CreateProjectReq struct {
 	DurationDays int      `json:"durationDays"`
 }
 
+type RejectProjectReq struct {
+	Reason string `json:"reason"`
+}
+
+type BoostProjectReq struct {
+	PromoCode string `json:"promoCode"`
+}
+
 type ProjectImage struct {
 	ID         uuid.UUID `json:"id"`
 	URL        string    `json:"url"`
