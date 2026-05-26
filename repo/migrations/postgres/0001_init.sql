@@ -111,10 +111,11 @@ insert into finished_projects_outbox_statuses (id, name) values
 
 create table if not exists finished_projects_outbox
 (
-    id         bigserial   primary key,
-    project_id uuid        not null references projects(id),
-    status_id  smallint    not null default 1 references finished_projects_outbox_statuses(id),
-    created_at timestamptz not null default now()
+    id           bigserial   primary key,
+    project_id   uuid        not null references projects(id),
+    status_id    smallint    not null default 1 references finished_projects_outbox_statuses(id),
+    created_at   timestamptz not null default now(),
+    locked_until timestamptz
 );
 
 -- +goose Down

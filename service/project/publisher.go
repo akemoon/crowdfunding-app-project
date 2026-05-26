@@ -60,7 +60,6 @@ func (w *PublishWorker) Run(ctx context.Context) {
 func (w *PublishWorker) runOnce(ctx context.Context) {
 	w.metrics.LastRunUnix.Set(float64(time.Now().Unix()))
 
-	// TODO: add locked_until
 	projects, err := w.repo.ListPendingFinishedOutbox(ctx, defaultPublishBatch)
 	if err != nil {
 		if ctx.Err() != nil {

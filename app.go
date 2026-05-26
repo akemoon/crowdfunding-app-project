@@ -10,7 +10,7 @@ import (
 	"github.com/akemoon/crowdfunding-app-project/api"
 	"github.com/akemoon/crowdfunding-app-project/client/promocode/resty"
 	minioStorage "github.com/akemoon/crowdfunding-app-project/client/storage/minio"
-	"github.com/akemoon/crowdfunding-app-project/cluster/contribution"
+	"github.com/akemoon/crowdfunding-app-project/consumer/contribution"
 	"github.com/akemoon/crowdfunding-app-project/metrics"
 	"github.com/akemoon/crowdfunding-app-project/publisher/project"
 	projectRepo "github.com/akemoon/crowdfunding-app-project/repo/project/postgres"
