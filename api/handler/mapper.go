@@ -99,6 +99,12 @@ var (
 		Code:    "promo_code_not_found",
 		Message: promocode.ErrPromoCodeNotFound.Error(),
 	}
+	MapRuleInvalidCodeFormat = httplib.ErrMapRule{
+		Err:     promocode.ErrInvalidCodeFormat,
+		Status:  http.StatusBadRequest,
+		Code:    "invalid_promo_code_format",
+		Message: promocode.ErrInvalidCodeFormat.Error(),
+	}
 )
 
 var (
@@ -135,6 +141,7 @@ var (
 		MapRuleProjectNotFound,
 		MapRuleForbidden,
 		MapRuleProjectNotActive,
+		MapRuleInvalidCodeFormat,
 		MapRulePromoCodeNotFound,
 	}
 	SubmitProjectMapRules = []httplib.ErrMapRule{

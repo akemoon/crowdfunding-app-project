@@ -44,6 +44,10 @@ func (c *PromoClient) UsePromoCode(ctx context.Context, userID uuid.UUID, code s
 		return 0, fmt.Errorf("use promo code: %w", err)
 	}
 
+	if resp.StatusCode() == http.StatusBadRequest {
+		return 0, promocode.ErrInvalidCodeFormat
+	}
+
 	if resp.StatusCode() == http.StatusNotFound {
 		return 0, promocode.ErrPromoCodeNotFound
 	}
